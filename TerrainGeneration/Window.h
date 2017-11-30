@@ -1,0 +1,65 @@
+#pragma once
+#include "Common.h"
+
+#include <functional>
+
+#include <GL\glew.h>
+#include <GLFW\glfw3.h>
+
+
+
+typedef std::function<void(class Window& source, const float& deltaTime)> WindowCallback;
+
+
+/**
+* Initialization settings for a window
+*/
+struct WindowInit 
+{
+	uint32	Major	= 3;
+	uint32	Minor	= 2;
+	bool	bForwardCompatibility = true;
+
+	uint32	Width	= 800;
+	uint32	Height	= 600;
+	string	Title	= "Window";
+
+	bool	bVerticalSync = false;
+};
+
+
+/**
+* Container for opengl (GLFW) window
+*/
+class Window
+{
+private:
+	GLFWwindow* m_glfwWindow = nullptr;
+
+public:
+	/**
+	* Initialized everything that is needed for the API (OpenGL/GLEW/GLEW)
+	* @returns If API initialized correctly
+	*/
+	static bool InitAPI();
+	/**
+	* Destroys everything created by the API correctly
+	*/
+	static void DestroyAPI();
+
+
+	/**
+	* Attemps to open a window with these settings
+	* @param settings			The OpenGL & Window settings to use
+	* @returns If the window openned succesfully
+	*/
+	bool Open(const WindowInit& settings);
+
+	/**
+	* Launches this window into it's main loop
+	* (Must be from the same thread it was openned in)
+	* @param callback			Callback function which will be called once per framce
+	*/
+	void LaunchMainLoop(WindowCallback callback);
+};
+
