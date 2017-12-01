@@ -135,8 +135,8 @@ void Terrain::FreeChunk(Chunk* chunk)
 
 void Terrain::UpdateScene(Window& window, const float& deltaTime) 
 {
-	for (int32 x = -2; x <= 2; ++x)
-		for (int32 y = -2; y <= 2; ++y)
+	for (int32 x = 0; x <= 0; ++x)
+		for (int32 y = 0; y <= 0; ++y)
 		{
 			ivec2 coords(x, y);
 			if (m_activeChunks.find(coords) == m_activeChunks.end())
@@ -153,7 +153,10 @@ void Terrain::RenderTerrain(Window& window, const float& deltaTime)
 
 	for (auto it : m_activeChunks)
 	{
-		testMaterial->PrepareMesh(*it.second->GetMesh());
-		testMaterial->RenderInstance(Transform());
+		if (it.second->IsMeshBuilt())
+		{
+			testMaterial->PrepareMesh(*it.second->GetMesh());
+			testMaterial->RenderInstance(Transform());
+		}
 	}
 }

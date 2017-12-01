@@ -17,27 +17,6 @@ Chunk::~Chunk()
 
 vec3 Chunk::LerpVertex(ivec3 a, ivec3 b)
 {
-	Voxel::Packet ap = GetVoxelData(a.x, a.y, a.z);
-	Voxel::Packet bp = GetVoxelData(b.x, b.y, b.z);
-	const float isoLevel = 0.25f; // Effectively works out as smoothness
-	const float bias = 0.00001f;
-
-	if (std::fabs(isoLevel - ap.density) < bias)
-		return a;
-	if (std::fabs(isoLevel - bp.density) < bias)
-		return b;
-	if (std::fabs(isoLevel - ap.density) < bias)
-		return a;
-
-	float mu = (isoLevel - ap.density) / (bp.density - ap.density);
-	return vec3(
-		a.x + mu * (float)(b.x - a.x),
-		a.y + mu * (float)(b.y - a.y),
-		a.z + mu * (float)(b.z - a.z)
-		);
-	/*
-
-
 	// If b < a swap
 	if ((b.x < a.x || b.y < a.z || b.z < a.z) && !(b.x > a.x || b.y > a.y || b.z > a.z))
 	{
@@ -48,7 +27,7 @@ vec3 Chunk::LerpVertex(ivec3 a, ivec3 b)
 
 	Voxel::Packet ap = GetVoxelData(a.x, a.y, a.z);
 	Voxel::Packet bp = GetVoxelData(b.x, b.y, b.z);
-	const float isoLevel = 1.0f / 7.0f; // Requires at least 1 voxel present
+	const float isoLevel = 1.0f / 27.0f; // Effectively works out as smoothness
 	const float bias = 0.00001f;
 
 
@@ -61,7 +40,7 @@ vec3 Chunk::LerpVertex(ivec3 a, ivec3 b)
 	// Too small
 	else
 		return a;
-		*/
+		
 }
 
 void Chunk::Alloc(const ivec2& coord) 
@@ -72,27 +51,16 @@ void Chunk::Alloc(const ivec2& coord)
 	// TEST GEN TERRAIN
 	for (uint32 x = 0; x < CHUNK_SIZE; ++x)
 		for (uint32 z = 0; z < CHUNK_SIZE; ++z)
-			Set(x, 0, z, Voxel::Type::Stone);
+		{
+			uint32 maxHeight = (std::cos((float)x / CHUNK_SIZE * 3.141592f * 2.0f) + 1.0f) * 0.25f * CHUNK_SIZE;
 
+			if (x == 7 && z == 7)
+				maxHeight = 8;
 
-	for (uint32 x = 0; x < 6; ++x)
-		for (uint32 z = 0; z < 6; ++z)
-			Set(x, 1, z, Voxel::Type::Stone);
-	for (uint32 x = 0; x < 4; ++x)
-		for (uint32 z = 0; z < 5; ++z)
-			Set(x, 2, z, Voxel::Type::Stone);
+			for (uint32 y = 0; y < maxHeight + 1; ++y)
+				Set(x, y, z, Voxel::Type::Stone);
+		}
 
-
-	for (uint32 x = 0; x < CHUNK_SIZE; ++x)
-		for (uint32 y = 0; y < x*x * 0.1f; ++y)
-			Set(x, y, CHUNK_SIZE - 1, Voxel::Type::Stone);
-
-	Set(5, 7, 5, Voxel::Type::Stone);
-	Set(4, 7, 5, Voxel::Type::Stone);
-	Set(5, 6, 5, Voxel::Type::Stone);
-	Set(4, 6, 5, Voxel::Type::Stone);
-	Set(3, 7, 5, Voxel::Type::Stone);
-	Set(5, 6, 5, Voxel::Type::Stone);
 
 
 	// TEST BUILD MESH
@@ -156,10 +124,13 @@ void Chunk::Alloc(const ivec2& coord)
 
 	m_mesh->SetVertices(vertices);
 	m_mesh->SetTriangles(triangles);
+	bIsMeshBuilt = true;
 }
 
 void Chunk::Dealloc() 
 {
+	bHasGenerated = false;
+	bIsMeshBuilt = false;
 	LOG("Dealloc chunk (%i %i)", m_chunkCoords.x, m_chunkCoords.y);
 }
 
@@ -183,19 +154,75 @@ Voxel::Packet Chunk::GetVoxelData(const int32& x, const int32& y, const int32& z
 	Voxel::Packet outPacket;
 	outPacket.density = 0.0f;
 	outPacket.type = Get(x, y, z);
+	uint32 count = 0;
 
-	// Ignore air and water
+	// Calc densitiy base on whether it's a material or not
 	if (!Voxel::IsMaterial(outPacket.type))
-		return outPacket;
+	{
+		if (!Voxel::IsMaterial(Get(x + 0, y + 0, z + 0))) ++count;
+		if (!Voxel::IsMaterial(Get(x + 0, y + 0, z + 1))) ++count;
+		if (!Voxel::IsMaterial(Get(x + 0, y + 0, z - 1))) ++count;
+		if (!Voxel::IsMaterial(Get(x + 0, y + 1, z + 0))) ++count;
+		if (!Voxel::IsMaterial(Get(x + 0, y + 1, z + 1))) ++count;
+		if (!Voxel::IsMaterial(Get(x + 0, y + 1, z - 1))) ++count;
+		if (!Voxel::IsMaterial(Get(x + 0, y - 1, z + 0))) ++count;
+		if (!Voxel::IsMaterial(Get(x + 0, y - 1, z + 1))) ++count;
+		if (!Voxel::IsMaterial(Get(x + 0, y - 1, z - 1))) ++count;
 
-	uint32 count = 1;
-	if (Voxel::IsMaterial(Get(x + 0, y + 0, z + 1))) ++count;
-	if (Voxel::IsMaterial(Get(x + 0, y + 0, z - 1))) ++count;
-	if (Voxel::IsMaterial(Get(x + 0, y + 1, z + 0))) ++count;
-	if (Voxel::IsMaterial(Get(x + 0, y - 1, z + 0))) ++count;
-	if (Voxel::IsMaterial(Get(x + 1, y + 0, z + 0))) ++count;
-	if (Voxel::IsMaterial(Get(x - 1, y + 0, z + 0))) ++count;
+		if (!Voxel::IsMaterial(Get(x + 1, y + 0, z + 0))) ++count;
+		if (!Voxel::IsMaterial(Get(x + 1, y + 0, z + 1))) ++count;
+		if (!Voxel::IsMaterial(Get(x + 1, y + 0, z - 1))) ++count;
+		if (!Voxel::IsMaterial(Get(x + 1, y + 1, z + 0))) ++count;
+		if (!Voxel::IsMaterial(Get(x + 1, y + 1, z + 1))) ++count;
+		if (!Voxel::IsMaterial(Get(x + 1, y + 1, z - 1))) ++count;
+		if (!Voxel::IsMaterial(Get(x + 1, y - 1, z + 0))) ++count;
+		if (!Voxel::IsMaterial(Get(x + 1, y - 1, z + 1))) ++count;
+		if (!Voxel::IsMaterial(Get(x + 1, y - 1, z - 1))) ++count;
 
-	outPacket.density = (float)count / 7.0f;
+		if (!Voxel::IsMaterial(Get(x - 1, y + 0, z + 0))) ++count;
+		if (!Voxel::IsMaterial(Get(x - 1, y + 0, z + 1))) ++count;
+		if (!Voxel::IsMaterial(Get(x - 1, y + 0, z - 1))) ++count;
+		if (!Voxel::IsMaterial(Get(x - 1, y + 1, z + 0))) ++count;
+		if (!Voxel::IsMaterial(Get(x - 1, y + 1, z + 1))) ++count;
+		if (!Voxel::IsMaterial(Get(x - 1, y + 1, z - 1))) ++count;
+		if (!Voxel::IsMaterial(Get(x - 1, y - 1, z + 0))) ++count;
+		if (!Voxel::IsMaterial(Get(x - 1, y - 1, z + 1))) ++count;
+		if (!Voxel::IsMaterial(Get(x - 1, y - 1, z - 1))) ++count;
+		outPacket.density = (float)count / -27.0f;
+	}
+	else
+	{
+		if (Voxel::IsMaterial(Get(x + 0, y + 0, z + 0))) ++count;
+		if (Voxel::IsMaterial(Get(x + 0, y + 0, z + 1))) ++count;
+		if (Voxel::IsMaterial(Get(x + 0, y + 0, z - 1))) ++count;
+		if (Voxel::IsMaterial(Get(x + 0, y + 1, z + 0))) ++count;
+		if (Voxel::IsMaterial(Get(x + 0, y + 1, z + 1))) ++count;
+		if (Voxel::IsMaterial(Get(x + 0, y + 1, z - 1))) ++count;
+		if (Voxel::IsMaterial(Get(x + 0, y - 1, z + 0))) ++count;
+		if (Voxel::IsMaterial(Get(x + 0, y - 1, z + 1))) ++count;
+		if (Voxel::IsMaterial(Get(x + 0, y - 1, z - 1))) ++count;
+
+		if (Voxel::IsMaterial(Get(x + 1, y + 0, z + 0))) ++count;
+		if (Voxel::IsMaterial(Get(x + 1, y + 0, z + 1))) ++count;
+		if (Voxel::IsMaterial(Get(x + 1, y + 0, z - 1))) ++count;
+		if (Voxel::IsMaterial(Get(x + 1, y + 1, z + 0))) ++count;
+		if (Voxel::IsMaterial(Get(x + 1, y + 1, z + 1))) ++count;
+		if (Voxel::IsMaterial(Get(x + 1, y + 1, z - 1))) ++count;
+		if (Voxel::IsMaterial(Get(x + 1, y - 1, z + 0))) ++count;
+		if (Voxel::IsMaterial(Get(x + 1, y - 1, z + 1))) ++count;
+		if (Voxel::IsMaterial(Get(x + 1, y - 1, z - 1))) ++count;
+
+		if (Voxel::IsMaterial(Get(x - 1, y + 0, z + 0))) ++count;
+		if (Voxel::IsMaterial(Get(x - 1, y + 0, z + 1))) ++count;
+		if (Voxel::IsMaterial(Get(x - 1, y + 0, z - 1))) ++count;
+		if (Voxel::IsMaterial(Get(x - 1, y + 1, z + 0))) ++count;
+		if (Voxel::IsMaterial(Get(x - 1, y + 1, z + 1))) ++count;
+		if (Voxel::IsMaterial(Get(x - 1, y + 1, z - 1))) ++count;
+		if (Voxel::IsMaterial(Get(x - 1, y - 1, z + 0))) ++count;
+		if (Voxel::IsMaterial(Get(x - 1, y - 1, z + 1))) ++count;
+		if (Voxel::IsMaterial(Get(x - 1, y - 1, z - 1))) ++count;
+		outPacket.density = (float)count / 27.0f;
+	}
+
 	return outPacket;
 }

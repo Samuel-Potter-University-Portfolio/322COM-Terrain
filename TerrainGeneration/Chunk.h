@@ -56,9 +56,11 @@ private:
 	ivec2 m_chunkCoords;
 
 	///
-	/// Rendering vars
+	/// Rendering/Generating vars
 	///
 	Mesh* m_mesh = nullptr;
+	bool bHasGenerated = false;
+	bool bIsMeshBuilt = false;
 
 public:
 	Chunk(Terrain* terrain);
@@ -112,5 +114,8 @@ private:
 public:
 	inline ivec2 GetCoords() const { return m_chunkCoords; }
 	inline Mesh* GetMesh() const { return m_mesh; }
+
+	inline bool HasGenerated() const { return bHasGenerated; }
+	inline bool IsMeshBuilt() const { return bIsMeshBuilt; }
 };
 
