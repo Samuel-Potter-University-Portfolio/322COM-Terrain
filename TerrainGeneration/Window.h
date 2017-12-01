@@ -41,6 +41,8 @@ private:
 	int32 m_width;
 	int32 m_height;
 	float m_aspectRatio;
+	int32 m_prevWidth;
+	int32 m_prevHeight;
 
 	///
 	/// Sub-controllers

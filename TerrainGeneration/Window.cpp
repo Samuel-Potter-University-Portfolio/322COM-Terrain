@@ -95,9 +95,15 @@ void Window::LaunchMainLoop(WindowCallback callback)
 		m_mouse.UpdateStates();
 
 		
-		// Update window vars
+		// Update size window if needed
 		glfwGetFramebufferSize(m_glfwWindow, &m_width, &m_height);
 		m_aspectRatio = (float)m_width / (float)m_height;
+		if (m_width != m_prevWidth || m_height != m_prevHeight)
+		{
+			m_prevWidth = m_width;
+			m_prevHeight = m_height;
+			glViewport(0, 0, m_width, m_height);
+		}
 
 
 		// Render/Logic

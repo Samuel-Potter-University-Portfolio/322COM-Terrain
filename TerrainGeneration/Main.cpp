@@ -31,7 +31,7 @@ void MainLoop(Window& window, const float& deltaTime)
 	if (window.GetKeyboard().IsKeyDown(Keyboard::Key::KV_LCONTROL))
 		testCamera.Translate(vec3(0, -1, 0) * deltaTime);
 
-	if (window.GetKeyboard().IsKeyReleased(Keyboard::Key::KV_ESCAPE))
+	if (window.GetMouse().IsButtonReleased(Mouse::Button::MB_LEFT))
 	{
 		window.GetMouse().SetGrabbed(!window.GetMouse().IsGrabbed());
 	}
