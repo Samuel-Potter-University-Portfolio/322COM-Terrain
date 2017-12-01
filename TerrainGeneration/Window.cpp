@@ -88,6 +88,11 @@ void Window::LaunchMainLoop(WindowCallback callback)
 		// TODO - Fetch settings
 		// TODO - Poll events
 
+		
+		// Update window vars
+		glfwGetFramebufferSize(m_glfwWindow, &m_width, &m_height);
+		m_aspectRatio = (float)m_width / (float)m_height;
+
 
 		// Render/Logic
 		float frameTime = glfwGetTime();

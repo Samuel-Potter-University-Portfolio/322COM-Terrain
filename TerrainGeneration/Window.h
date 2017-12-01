@@ -35,6 +35,9 @@ class Window
 {
 private:
 	GLFWwindow* m_glfwWindow = nullptr;
+	int32 m_width;
+	int32 m_height;
+	float m_aspectRatio;
 
 public:
 	/**
@@ -61,5 +64,14 @@ public:
 	* @param callback			Callback function which will be called once per framce
 	*/
 	void LaunchMainLoop(WindowCallback callback);
+
+
+	/**
+	* Getters & Setters
+	*/
+public:
+	inline int32 GetWidth() const { return m_width; }
+	inline int32 GetHeight() const { return m_height; }
+	inline float GetAspectRatio() const { return m_aspectRatio; }
 };
 
