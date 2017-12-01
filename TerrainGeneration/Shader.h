@@ -32,6 +32,11 @@ public:
 	*/
 	virtual void Bind();
 
+
+	///
+	/// Loading/Building shader
+	///
+public:
 	/**
 	* Adds a vertex shader unit to this shader from source code
 	* @param code		The glsl source code for the shader
@@ -52,9 +57,72 @@ public:
 	bool LinkShader();
 
 
+	///
+	/// Uniforms fetching and setting
+	///
+public:
 	/**
-	* Getters & Setters
+	* Get a uniform by name
+	* @param name		The name (in source) for the uniform
+	* @returns The id of the uniform
 	*/
+	uint32 GetUniform(const string& name);
+
+	/**
+	* Load a float into this unform id
+	* @param id			The id of the uniform (fetched from GetUniform)
+	* @param value		The value to load into the location
+	*/
+	void SetUniformFloat(const uint32& id, const float& value);
+	/**
+	* Load a int into this unform id
+	* @param id			The id of the uniform (fetched from GetUniform)
+	* @param value		The value to load into the location
+	*/
+	void SetUniformInt(const uint32& id, const int32& value);
+
+	/**
+	* Load a vec2 into this unform id
+	* @param id			The id of the uniform (fetched from GetUniform)
+	* @param value		The value to load into the location
+	*/
+	void SetUniformVec2(const uint32& id, const vec2& value);
+	/**
+	* Load a vec3 into this unform id
+	* @param id			The id of the uniform (fetched from GetUniform)
+	* @param value		The value to load into the location
+	*/
+	void SetUniformVec3(const uint32& id, const vec3& value);
+	/**
+	* Load a vec4 into this unform id
+	* @param id			The id of the uniform (fetched from GetUniform)
+	* @param value		The value to load into the location
+	*/
+	void SetUniformVec4(const uint32& id, const vec4& value);
+
+	/**
+	* Load a mat2 into this unform id
+	* @param id			The id of the uniform (fetched from GetUniform)
+	* @param value		The value to load into the location
+	*/
+	void SetUniformMat2(const uint32& id, const mat2& value);
+	/**
+	* Load a mat3 into this unform id
+	* @param id			The id of the uniform (fetched from GetUniform)
+	* @param value		The value to load into the location
+	*/
+	void SetUniformMat3(const uint32& id, const mat3& value);
+	/**
+	* Load a mat4 into this unform id
+	* @param id			The id of the uniform (fetched from GetUniform)
+	* @param value		The value to load into the location
+	*/
+	void SetUniformMat4(const uint32& id, const mat4& value);
+
+
+	///
+	/// Getters & Setters
+	///
 public:
 	inline uint32 GetID() const { return m_programId; }
 

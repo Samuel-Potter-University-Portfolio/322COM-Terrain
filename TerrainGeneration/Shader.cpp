@@ -128,3 +128,44 @@ bool Shader::LinkShader()
 	
 	return true;
 }
+
+
+uint32 Shader::GetUniform(const string& name) 
+{
+	return glGetUniformLocation(m_programId, name.c_str());
+}
+
+void Shader::SetUniformFloat(const uint32& id, const float& value) 
+{
+	glUniform1f(id, value);
+}
+void Shader::SetUniformInt(const uint32& id, const int32& value)
+{
+	glUniform1i(id, value);
+}
+
+void Shader::SetUniformVec2(const uint32& id, const vec2& value) 
+{
+	glUniform2fv(id, 1, &value[0]);
+}
+void Shader::SetUniformVec3(const uint32& id, const vec3& value) 
+{
+	glUniform3fv(id, 1, &value[0]);
+}
+void Shader::SetUniformVec4(const uint32& id, const vec4& value)
+{
+	glUniform4fv(id, 1, &value[0]);
+}
+
+void Shader::SetUniformMat2(const uint32& id, const mat2& value) 
+{
+	glUniformMatrix2fv(id, 1, GL_FALSE, &value[0][0]);
+}
+void Shader::SetUniformMat3(const uint32& id, const mat3& value) 
+{
+	glUniformMatrix3fv(id, 1, GL_FALSE, &value[0][0]);
+}
+void Shader::SetUniformMat4(const uint32& id, const mat4& value)
+{
+	glUniformMatrix4fv(id, 1, GL_FALSE, &value[0][0]);
+}

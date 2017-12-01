@@ -37,9 +37,9 @@ public:
 	vec3 GetUp();
 
 
-	/**
-	* Getters & Setters
-	*/
+	///
+	/// Getters & Setters
+	///
 public:
 	inline void SetLocation(const vec3& value) { m_location = value; bRequiresRebuild = true; }
 	inline void Translate(const vec3& value) { m_location += value; bRequiresRebuild = true; }

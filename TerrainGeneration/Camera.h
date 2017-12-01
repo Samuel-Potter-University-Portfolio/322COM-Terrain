@@ -34,9 +34,9 @@ public:
 	mat4 GetPerspectiveMatrix(const Window* window);
 
 
-	/**
-	* Getters & Setters
-	*/
+	///
+	/// Getters & Setters
+	///
 public:
 	inline void SetFoV(const float& value) { m_fov = value; bRequiresPerspectiveRebuild = true; }
 	inline float GetFoV() const { return m_fov; }

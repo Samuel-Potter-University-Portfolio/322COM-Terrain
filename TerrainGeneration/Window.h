@@ -66,9 +66,9 @@ public:
 	void LaunchMainLoop(WindowCallback callback);
 
 
-	/**
-	* Getters & Setters
-	*/
+	///
+	/// Getters & Setters
+	///
 public:
 	inline int32 GetWidth() const { return m_width; }
 	inline int32 GetHeight() const { return m_height; }

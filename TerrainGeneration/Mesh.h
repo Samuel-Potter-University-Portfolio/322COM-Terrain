@@ -78,9 +78,9 @@ private:
 	void SetBufferData(const uint32& index, const void* data, const uint32& size, const uint32& width, const bool& normalized);
 
 
-	/**
-	* Getters & Setters
-	*/
+	///
+	/// Getters & Setters
+	///
 public:
 	inline uint32 GetID() const { return m_id; }
 	inline uint32 GetTriangleCount() const { return m_triangleCount; }
