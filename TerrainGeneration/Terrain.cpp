@@ -20,6 +20,7 @@ Terrain::Terrain(Scene* scene) :
 {
 	m_workerThread = new std::thread(&Terrain::RunWorker, this);
 
+	TESTCHUNK = new Chunk(this);
 
 	testMesh = new Mesh;
 	testMesh->SetVertices(std::vector<vec3>({
@@ -62,7 +63,7 @@ Terrain::Terrain(Scene* scene) :
 		void main()
 		{
 			gl_Position = ViewToClip * WorldToView * ObjectToWorld * vec4(inPos, 1);
-			pos = inPos;
+			pos = inPos.xyz;
 		}
 	)");
 	testShader->LoadFragmentShaderFromMemory(R"(
@@ -74,7 +75,7 @@ Terrain::Terrain(Scene* scene) :
 
 		void main()
 		{
-			outColour.rgb = pos;
+			outColour.rgb = mod(pos, vec3(1,1,1));
 			outColour.a = 1;
 		}
 	)");
@@ -96,6 +97,7 @@ Terrain::~Terrain()
 
 	delete testMaterial;
 	delete testShader;
+	delete TESTCHUNK;
 }
 
 void Terrain::RunWorker() 
@@ -133,4 +135,8 @@ void Terrain::RenderTerrain(Window& window, const float& deltaTime)
 	Transform b;
 	b.Translate(vec3(6, 0, 0));
 	testMaterial->RenderInstance(b);
+
+	
+	testMaterial->PrepareMesh(*TESTCHUNK->GetMesh());
+	testMaterial->RenderInstance(Transform());
 }

@@ -22,11 +22,11 @@ int main(void)
 		return -1;
 	}
 
-	Scene scene;
-	scene.Build();
-	window.LaunchMainLoop(std::bind(&Scene::UpdateCallback, &scene, std::placeholders::_1, std::placeholders::_2));
-	scene.Destroy();
-
+	Scene* scene = new Scene;
+	scene->Build();
+	window.LaunchMainLoop(std::bind(&Scene::UpdateCallback, scene, std::placeholders::_1, std::placeholders::_2));
+	scene->Destroy();
+	delete scene;
 
 	Window::DestroyAPI();
 	return 0;

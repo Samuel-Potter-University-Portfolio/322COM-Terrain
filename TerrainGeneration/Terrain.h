@@ -2,6 +2,8 @@
 #include "Common.h"
 #include "Window.h"
 
+#include "Chunk.h"
+
 #include <thread>
 
 
@@ -18,6 +20,8 @@ private:
 	///
 	std::thread* m_workerThread;
 	bool bWorkerRunning = false;
+
+	Chunk* TESTCHUNK;
 
 public:
 	Terrain(Scene* scene);
