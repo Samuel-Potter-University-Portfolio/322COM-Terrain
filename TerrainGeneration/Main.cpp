@@ -2,19 +2,24 @@
 #include "Logger.h"
 
 
+#include "Mesh.h"
 #include "Shader.h"
-uint32 testVAO;
+
+Mesh* testMesh;
 Shader testShader;
+
 
 void MainLoop(Window& window, const float& deltaTime)
 {
 	glClearColor(0.1451f, 0.1490f, 0.1922f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	testShader.SetCullFace(false);
+
 	testShader.Bind();
-	glDrawArrays(GL_TRIANGLES, testVAO, 3);
-	//glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+	 
+	glBindVertexArray(testMesh->GetID());
+	//glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawElements(GL_TRIANGLES, testMesh->GetTriangleCount(), GL_UNSIGNED_INT, nullptr);
 }
 
 
@@ -68,23 +73,18 @@ int main(void)
 	)");
 	testShader.LinkShader();
 
+
 	// Setup whole triangle
-	uint32 testVBO[2];
-	glGenVertexArrays(1, &testVAO);
-	glGenBuffers(2, testVBO);
-
-
-	glBindVertexArray(testVAO);
-	float coords[]{
-		-0.5f, 0.5f, 0.0f,
-		0.5f, 0.5f, 0.0f,
-		0.0f, 0.5f, 0.0f
-	};
-
-	glBindBuffer(GL_ARRAY_BUFFER, testVBO[0]);
-	glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(float), coords, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	Mesh mesh;
+	mesh.SetVertices(std::vector<vec3>({
+		vec3(-0.4f, 0.1f, 0.0f),
+		vec3(0.4f, 0.1f, 0.0f),
+		vec3(0.0f, 0.7f, 0.0f)
+	}));
+	mesh.SetTriangles(std::vector<uint32>({ 0,1,2 }));
+	testMesh = &mesh;
+	
+	
 
 
 
@@ -92,33 +92,5 @@ int main(void)
 
 
 	Window::DestroyAPI();
-
-
-	/*
-	GLFWwindow* window;
-
-	if (!glfwInit())
-		return -1;
-
-	window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
-	if (!window)
-	{
-		glfwTerminate();
-		return -1;
-	}
-
-	glfwMakeContextCurrent(window);
-
-	while (!glfwWindowShouldClose(window))
-	{
-		glClear(GL_COLOR_BUFFER_BIT);
-
-		glfwSwapBuffers(window);
-
-		glfwPollEvents();
-	}
-
-	glfwTerminate();
-	*/
 	return 0;
 }
