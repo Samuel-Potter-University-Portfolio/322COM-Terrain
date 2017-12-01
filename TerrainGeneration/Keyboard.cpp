@@ -5,6 +5,8 @@
 
 void Keyboard::UpdateStates() 
 {
+	std::memcpy(m_prevStates, m_states, sizeof(m_prevStates));
+
 	for (uint16 k = 32; k < Key::Last; ++k)
 	{
 		const int32 state = glfwGetKey(m_glfwWindow, k);

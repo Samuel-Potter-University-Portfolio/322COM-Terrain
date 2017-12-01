@@ -41,6 +41,7 @@ private:
 	///
 	struct GLFWwindow* m_glfwWindow;
 	ButtonState m_states[Button::Last]{ Released };
+	ButtonState m_prevStates[Button::Last]{ Released };
 
 	vec2 m_location;
 	vec2 m_velocity;
@@ -77,6 +78,12 @@ public:
 	inline bool IsButtonDown(const Button& button) const { return m_states[button] != ButtonState::Released; }
 	/// Is key not being pressed
 	inline bool IsButtonUp(const Button& button) const { return m_states[button] == ButtonState::Released; }
+
+	/// Was the key pressed this frame
+	inline bool IsButtonPressed(const Button& button) const { return m_states[button] != ButtonState::Released && m_prevStates[button] == ButtonState::Released; }
+	/// Was the key released this frame
+	inline bool IsButtonReleased(const Button& button) const { return m_states[button] == ButtonState::Released && m_prevStates[button] != ButtonState::Released; }
+
 
 	inline vec2 GetLocation() const { return m_location; }
 	inline vec2 GetVelocity() const { return m_velocity; }

@@ -114,6 +114,7 @@ private:
 
 	struct GLFWwindow* m_glfwWindow;
 	KeyState m_states[Key::Last]{ Released };
+	KeyState m_prevStates[Key::Last]{ Released };
 
 private:
 	///
@@ -139,5 +140,10 @@ public:
 	inline bool IsKeyDown(const Key& key) const { return m_states[key] != KeyState::Released; }
 	/// Is key not being pressed
 	inline bool IsKeyUp(const Key& key) const { return m_states[key] == KeyState::Released; }
+
+	/// Was the key pressed this frame
+	inline bool IsKeyPressed(const Key& key) const { return m_states[key] != KeyState::Released && m_prevStates[key] == KeyState::Released; }
+	/// Was the key released this frame
+	inline bool IsKeyReleased(const Key& key) const { return m_states[key] == KeyState::Released && m_prevStates[key] != KeyState::Released; }
 };
 

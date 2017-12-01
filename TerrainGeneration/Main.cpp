@@ -31,7 +31,7 @@ void MainLoop(Window& window, const float& deltaTime)
 	if (window.GetKeyboard().IsKeyDown(Keyboard::Key::KV_LCONTROL))
 		testCamera.Translate(vec3(0, -1, 0) * deltaTime);
 
-	if (window.GetKeyboard().IsKeyDown(Keyboard::Key::KV_ESCAPE))
+	if (window.GetKeyboard().IsKeyReleased(Keyboard::Key::KV_ESCAPE))
 	{
 		window.GetMouse().SetGrabbed(!window.GetMouse().IsGrabbed());
 	}
@@ -39,7 +39,6 @@ void MainLoop(Window& window, const float& deltaTime)
 		testCamera.SetEularRotation(testCamera.GetEularRotation() + vec3(-window.GetMouse().GetVelocity().y, -window.GetMouse().GetVelocity().x, 0) * deltaTime * 10.0f);
 
 
-	testShader.SetCullFace(false);
 	testShader.Bind();
 
 	testShader.SetUniformMat4(testShader.GetUniform("WorldToView"), testCamera.GetViewMatrix());
@@ -51,12 +50,12 @@ void MainLoop(Window& window, const float& deltaTime)
 	glDrawElements(GL_TRIANGLES, testMesh->GetTriangleCount(), GL_UNSIGNED_INT, nullptr);
 
 	Transform testTransform;
-	testTransform.SetLocation(vec3(-3, 0, 0));
+	testTransform.SetLocation(vec3(-6, 0, 0));
 	testShader.SetUniformMat4(testShader.GetUniform("ObjectToWorld"), testTransform.GetTransformMatrix());
 	glDrawElements(GL_TRIANGLES, testMesh->GetTriangleCount(), GL_UNSIGNED_INT, nullptr);
 
 	Transform testTransform1;
-	testTransform1.SetLocation(vec3(3, 0, 0));
+	testTransform1.SetLocation(vec3(6, 0, 0));
 	testShader.SetUniformMat4(testShader.GetUniform("ObjectToWorld"), testTransform1.GetTransformMatrix());
 	glDrawElements(GL_TRIANGLES, testMesh->GetTriangleCount(), GL_UNSIGNED_INT, nullptr);
 }
@@ -127,7 +126,7 @@ int main(void)
 	mesh.SetVertices(std::vector<vec3>({
 		vec3(0.0f, 5.0f, 0.0f),
 		vec3(-3.0f, 0.0f, 3.0f),
-		vec3(3.0f, 5.0f, 3.0f),
+		vec3(3.0f, 0.0f, 3.0f),
 
 		vec3(0.0f, 5.0f, 0.0f),
 		vec3(3.0f, 0.0f, -3.0f),

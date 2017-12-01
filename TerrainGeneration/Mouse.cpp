@@ -5,6 +5,8 @@
 
 void Mouse::UpdateStates()
 {
+	std::memcpy(m_prevStates, m_states, sizeof(m_prevStates));
+
 	// Update button states
 	for (uint16 b = 0; b < Button::Last; ++b)
 	{
