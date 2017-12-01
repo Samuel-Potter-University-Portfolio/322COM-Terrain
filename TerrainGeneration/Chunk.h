@@ -38,6 +38,7 @@ private:
 	///
 	Terrain* m_terrain;
 	Voxel::Type m_voxels[CHUNK_HEIGHT * CHUNK_SIZE * CHUNK_SIZE]{ Voxel::Type::Air };
+	ivec2 m_chunkCoords;
 
 	///
 	/// Rendering vars
@@ -47,6 +48,20 @@ private:
 public:
 	Chunk(Terrain* terrain);
 	~Chunk();
+
+
+	/**
+	* Callback for when this chunk comes into usage
+	* (Called when chunk is used from object pool)
+	* @param coord			The new chunk coord that this will use
+	*/
+	void Alloc(const ivec2& coord);
+	/**
+	* Callback for when this chunk goes out of usage (i.e. goes back into the pool)
+	* (Called when chunk goes back into object pool)
+	*/
+	void Dealloc();
+
 
 private:
 	/// Convect XYZ to a valid array index
@@ -70,6 +85,7 @@ private:
 	/// Getters & Setters
 	///
 public:
+	inline ivec2 GetCoords() const { return m_chunkCoords; }
 	inline Mesh* GetMesh() const { return m_mesh; }
 };
 

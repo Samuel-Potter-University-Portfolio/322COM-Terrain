@@ -7,9 +7,8 @@
 
 #include "Shader.h"
 #include "Material.h"
-#include "Mesh.h"
 #include "Transform.h"
-Mesh* testMesh;
+
 Shader* testShader;
 Material* testMaterial;
 
@@ -20,27 +19,11 @@ Terrain::Terrain(Scene* scene) :
 {
 	m_workerThread = new std::thread(&Terrain::RunWorker, this);
 
-	TESTCHUNK = new Chunk(this);
+	// Setup chunk pool
+	for (uint32 i = 0; i < m_poolSize; ++i)
+		m_chunkPool.emplace(new Chunk(this));
+	LOG("Built chunk pool of size %i", m_poolSize);
 
-	testMesh = new Mesh;
-	testMesh->SetVertices(std::vector<vec3>({
-		vec3(0.0f, 5.0f, 0.0f),
-		vec3(-3.0f, 0.0f, 3.0f),
-		vec3(3.0f, 0.0f, 3.0f),
-
-		vec3(0.0f, 5.0f, 0.0f),
-		vec3(3.0f, 0.0f, -3.0f),
-		vec3(-3.0f, 0.0f, -3.0f),
-
-		vec3(0.0f, 5.0f, 0.0f),
-		vec3(-3.0f, 0.0f, -3.0f),
-		vec3(-3.0f, 0.0f, 3.0f),
-
-		vec3(0.0f, 5.0f, 0.0f),
-		vec3(3.0f, 0.0f, 3.0f),
-		vec3(3.0f, 0.0f, -3.0f),
-	}));
-	testMesh->SetTriangles(std::vector<uint32>({ 0,1,2, 3,4,5, 6,7,8, 9,10,11 }));
 
 
 	testShader = new Shader;
@@ -86,6 +69,7 @@ Terrain::Terrain(Scene* scene) :
 
 Terrain::~Terrain()
 {
+	// Clean up worker thread
 	if (m_workerThread != nullptr)
 	{
 		bWorkerRunning = false;
@@ -93,11 +77,20 @@ Terrain::~Terrain()
 		delete m_workerThread;
 	}
 
-	delete testMesh;
+	// Clean up chunk pool
+	for (auto it : m_activeChunks)
+		delete it.second;
+	while (m_chunkPool.size() != 0)
+	{
+		Chunk* chunk = m_chunkPool.front();
+		m_chunkPool.pop();
+		delete chunk;
+	}
+
+
 
 	delete testMaterial;
 	delete testShader;
-	delete TESTCHUNK;
 }
 
 void Terrain::RunWorker() 
@@ -115,28 +108,52 @@ void Terrain::RunWorker()
 	bWorkerRunning = false;
 }
 
+
+bool Terrain::TryGetNewChunk(Chunk*& outChunk, const ivec2& coord)
+{
+	if (m_chunkPool.size() == 0)
+		return false;
+
+	// Take out of chunk pool
+	outChunk = m_chunkPool.front();
+	m_chunkPool.pop();
+
+	m_activeChunks[coord] = outChunk;
+	outChunk->Alloc(coord);
+	return true;
+}
+void Terrain::FreeChunk(Chunk* chunk) 
+{
+	// Remove from active chunks
+	m_activeChunks.erase(chunk->GetCoords());
+
+	// Add back into chunk pool
+	m_chunkPool.push(chunk);
+	chunk->Dealloc();
+}
+
+
 void Terrain::UpdateScene(Window& window, const float& deltaTime) 
 {
+	for (int32 x = -2; x <= 2; ++x)
+		for (int32 y = -2; y <= 2; ++y)
+		{
+			ivec2 coords(x, y);
+			if (m_activeChunks.find(coords) == m_activeChunks.end())
+			{
+				Chunk* chunk;
+				TryGetNewChunk(chunk, coords);
+			}
+		}
 }
 
 void Terrain::RenderTerrain(Window& window, const float& deltaTime) 
 {
 	testMaterial->Bind(window, *m_parent);
-	testMaterial->PrepareMesh(*testMesh);
 
-
-	testMaterial->RenderInstance(Transform());
-
-	Transform a;
-	a.Translate(vec3(-6, 0, 0));
-	a.SetEularRotation(vec3(45, 45, 0));
-	testMaterial->RenderInstance(a);
-
-	Transform b;
-	b.Translate(vec3(6, 0, 0));
-	testMaterial->RenderInstance(b);
-
-	
-	testMaterial->PrepareMesh(*TESTCHUNK->GetMesh());
-	testMaterial->RenderInstance(Transform());
+	for (auto it : m_activeChunks)
+	{
+		testMaterial->PrepareMesh(*it.second->GetMesh());
+		testMaterial->RenderInstance(Transform());
+	}
 }

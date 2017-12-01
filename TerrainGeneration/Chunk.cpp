@@ -1,10 +1,26 @@
 #include "Chunk.h"
+#include "Logger.h"
+
 #include "MarchingCubes.h"
 
 
 Chunk::Chunk(Terrain* terrain) :
 	m_terrain(terrain)
 {
+	m_mesh = new Mesh;
+}
+Chunk::~Chunk()
+{
+	delete m_mesh;
+}
+
+
+void Chunk::Alloc(const ivec2& coord) 
+{
+	m_chunkCoords = coord;
+	LOG("Alloc new chunk (%i %i)", m_chunkCoords.x, m_chunkCoords.y);
+
+	// TEST GEN TERRAIN
 	for (uint32 x = 0; x < CHUNK_SIZE; ++x)
 		for (uint32 z = 0; z < CHUNK_SIZE; ++z)
 			Set(x, 0, z, Voxel::Type::Stone);
@@ -16,9 +32,9 @@ Chunk::Chunk(Terrain* terrain) :
 	Set(3, 7, 5, Voxel::Type::Stone);
 	Set(5, 6, 5, Voxel::Type::Stone);
 
-	// TEST BUILD MEsH
-	m_mesh = new Mesh;
 
+	// TEST BUILD MEsH
+	const vec3 chunkOffset = vec3(CHUNK_SIZE * m_chunkCoords.x, 0, CHUNK_SIZE * m_chunkCoords.y);
 	std::vector<uint32> triangles;
 	std::vector<vec3> vertices;
 
@@ -40,7 +56,7 @@ Chunk::Chunk(Terrain* terrain) :
 				while (*edges != -1)
 				{
 					triangles.emplace_back(vertices.size());
-					vertices.emplace_back(vec3(x, y, z) + MarchingCubes::Edges[*(edges++)]);
+					vertices.emplace_back(chunkOffset + vec3(x, y, z) + MarchingCubes::Edges[*(edges++)]);
 				}
 			}
 
@@ -48,7 +64,7 @@ Chunk::Chunk(Terrain* terrain) :
 	m_mesh->SetTriangles(triangles);
 }
 
-Chunk::~Chunk()
+void Chunk::Dealloc() 
 {
-	delete m_mesh;
+	LOG("Dealloc chunk (%i %i)", m_chunkCoords.x, m_chunkCoords.y);
 }
