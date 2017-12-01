@@ -33,13 +33,7 @@ private:
 public:
 	Mesh();
 	~Mesh();
-
-	/** 
-	* Render this mesh in the using the default settings 
-	* (Expects OpenGL to left in a good state to render)
-	*/
-	void DefaultRender();
-
+	
 	/**
 	* Set all of the triangles indices for this mesh
 	* @param trangles		List of the indices for drawing a triangle

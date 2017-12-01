@@ -25,8 +25,15 @@ void Material::Bind(Window& window, Scene& scene)
 	m_shader->SetUniformMat4(m_uniformViewToClip, scene.GetCamera().GetPerspectiveMatrix(&window));
 }
 
-void Material::PrepareMesh(Mesh& mesh, Transform& transform)
+void Material::PrepareMesh(Mesh& mesh)
 {
 	glBindVertexArray(mesh.GetID());
+	m_boundMeshTris = mesh.GetTriangleCount();
+}
+
+void Material::RenderInstance(class Transform& transform) 
+{
 	m_shader->SetUniformMat4(m_uniformObjectToWorld, transform.GetTransformMatrix());
+
+	glDrawElements(GL_TRIANGLES, m_boundMeshTris, GL_UNSIGNED_INT, nullptr);
 }

@@ -4,6 +4,8 @@
 #include "Window.h"
 #include "Camera.h"
 
+#include "Terrain.h"
+
 
 /**
 * Contains and manages all of the states for displaying
@@ -16,6 +18,7 @@ private:
 	/// Controllers
 	///
 	Camera m_camera;
+	Terrain* m_terrain = nullptr;
 
 
 public:
@@ -49,5 +52,12 @@ private:
 	* @param deltaTime			Time (In seconds) since last update/render
 	*/
 	void RenderScene(Window& window, const float& deltaTime);
+
+
+	///
+	/// Getters & Setters
+	///
+public:
+	inline Camera& GetCamera() { return m_camera; }
 };
 

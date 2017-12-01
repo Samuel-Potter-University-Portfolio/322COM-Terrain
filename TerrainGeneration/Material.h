@@ -20,6 +20,8 @@ protected:
 	uint32 m_uniformWorldToView;
 	uint32 m_uniformViewToClip;
 
+	uint32 m_boundMeshTris;
+
 public:
 	Material(Shader* shader);
 	~Material();
@@ -37,6 +39,12 @@ public:
 	* @param mesh				The mesh that is going to be rendered
 	* @param transform			The transform to use to render this mesh with
 	*/
-	virtual void PrepareMesh(class Mesh& mesh, class Transform& transform);
+	virtual void PrepareMesh(class Mesh& mesh);
+
+	/**
+	* Render an instance of the previously bound mesh at this transform
+	* @param transform			The transform data to use during render
+	*/
+	virtual void RenderInstance(class Transform& transform);
 };
 
