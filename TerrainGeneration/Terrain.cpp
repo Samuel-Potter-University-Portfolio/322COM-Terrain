@@ -40,25 +40,39 @@ Terrain::Terrain(Scene* scene) :
 		uniform mat4 ViewToClip;
 
 		layout (location = 0) in vec3 inPos;
+		layout (location = 1) in vec3 inNormal;
 
-		out vec3 pos;
+		out vec3 passToCamera;
+		out vec3 passPos;
+		out vec3 passNormal;
 
 		void main()
 		{
-			gl_Position = ViewToClip * WorldToView * ObjectToWorld * vec4(inPos, 1);
-			pos = inPos.xyz;
+			vec4 worldLocation = ObjectToWorld * vec4(inPos, 1);
+			vec3 cameraLocation = vec3(ViewToClip[0][3], ViewToClip[1][3], ViewToClip[2][3]);
+			passToCamera = worldLocation.xyz - cameraLocation;
+
+			gl_Position = ViewToClip * WorldToView * worldLocation;
+			passPos = inPos.xyz;
+			passNormal = inNormal;
 		}
 	)");
 	testShader->LoadFragmentShaderFromMemory(R"(
 		#version 330 core
 
-		in vec3 pos;
+				
+		in vec3 passToCamera;
+		in vec3 passPos;
+		in vec3 passNormal;
 
 		out vec4 outColour;
 
 		void main()
 		{
-			outColour.rgb = mod(pos, vec3(1,1,1));
+			vec3 lightDirection = normalize(vec3(1, -1, 1));
+			float diffuse = max(dot(-lightDirection, normalize(passNormal)), 0.2);
+
+			outColour.rgb = vec3(1,1,1) * diffuse;
 			outColour.a = 1;
 		}
 	)");
@@ -135,8 +149,8 @@ void Terrain::FreeChunk(Chunk* chunk)
 
 void Terrain::UpdateScene(Window& window, const float& deltaTime) 
 {
-	for (int32 x = 0; x <= 0; ++x)
-		for (int32 y = 0; y <= 0; ++y)
+	for (int32 x = -1; x <= 1; ++x)
+		for (int32 y = -1; y <= 1; ++y)
 		{
 			ivec2 coords(x, y);
 			if (m_activeChunks.find(coords) == m_activeChunks.end())

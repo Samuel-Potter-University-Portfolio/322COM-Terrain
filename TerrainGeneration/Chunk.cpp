@@ -2,6 +2,7 @@
 #include "Logger.h"
 
 #include "MarchingCubes.h"
+#include <unordered_map>
 
 
 Chunk::Chunk(Terrain* terrain) :
@@ -13,6 +14,24 @@ Chunk::~Chunk()
 {
 	delete m_mesh;
 }
+
+
+/**
+* The appropriate hashing functions which are needed to use vec3 as a key
+* https://stackoverflow.com/questions/9047612/glmivec2-as-key-in-unordered-map
+*/
+struct vec3_KeyFuncs
+{
+	inline size_t operator()(const vec3& v)const
+	{
+		return std::hash<int>()(v.x) ^ std::hash<int>()(v.y) ^ std::hash<int>()(v.z);
+	}
+
+	inline bool operator()(const vec3& a, const vec3& b)const
+	{
+		return a.x == b.x && a.y == b.y && a.z == b.z;
+	}
+};
 
 
 vec3 Chunk::LerpVertex(ivec3 a, ivec3 b)
@@ -31,7 +50,7 @@ vec3 Chunk::LerpVertex(ivec3 a, ivec3 b)
 	const float bias = 0.00001f;
 
 
-	if (std::fabs(ap.density - bp.density) > 0.0001f)
+	if (std::fabs(ap.density - bp.density) > bias)
 	{	
 		vec3 af = a;
 		vec3 bf = b;
@@ -39,7 +58,7 @@ vec3 Chunk::LerpVertex(ivec3 a, ivec3 b)
 	}
 	// Too small
 	else
-		return a;
+		return vec3(a + b) * 0.5f;
 		
 }
 
@@ -62,10 +81,23 @@ void Chunk::Alloc(const ivec2& coord)
 		}
 
 
+	Set(5, 5, 5, Voxel::Type::Stone);
+	Set(5, 4, 5, Voxel::Type::Stone);
+	Set(5, 5, 6, Voxel::Type::Stone);
+	Set(5, 4, 6, Voxel::Type::Stone);
+	Set(6, 5, 5, Voxel::Type::Stone);
+	Set(6, 4, 5, Voxel::Type::Stone);
+	Set(6, 5, 6, Voxel::Type::Stone);
+	Set(4, 4, 6, Voxel::Type::Stone);
+
 
 	// TEST BUILD MESH
 	const vec3 chunkOffset = vec3(CHUNK_SIZE * m_chunkCoords.x, 0, CHUNK_SIZE * m_chunkCoords.y);
+
+	std::unordered_map<vec3, uint32, vec3_KeyFuncs> vertexIndexLookup;
+
 	vec3 edges[12];
+	vec3 norms[12];
 
 	std::vector<uint32> triangles;
 	std::vector<vec3> vertices;
@@ -117,13 +149,57 @@ void Chunk::Alloc(const ivec2& coord)
 				int8* caseEdges = MarchingCubes::Cases[caseIndex];
 				while (*caseEdges != -1)
 				{
-					triangles.emplace_back(vertices.size());
-					vertices.emplace_back(chunkOffset + edges[*(caseEdges++)]);
+					int8 edge = *(caseEdges++);
+					vec3 vert = chunkOffset + edges[edge];
+					
+					// Reuse old vertex (Lets us to normal smoothing)
+					auto it = vertexIndexLookup.find(vert);
+					if (it != vertexIndexLookup.end())
+					{
+						triangles.emplace_back(it->second);
+					}
+					else
+					{
+						const uint32 index = vertices.size();
+						triangles.emplace_back(index);
+						vertices.emplace_back(vert);
+						vertexIndexLookup[vert] = index;
+					}
+
 				}
 			}
 
 	m_mesh->SetVertices(vertices);
 	m_mesh->SetTriangles(triangles);
+
+	// Make normals out of weighted triangles
+	std::unordered_map<uint32, vec3> normalLookup;
+
+	for (uint32 i = 0; i < triangles.size(); i += 3)
+	{
+		uint32 ai = triangles[i];
+		uint32 bi = triangles[i + 1];
+		uint32 ci = triangles[i + 2];
+
+		vec3 a = vertices[ai];
+		vec3 b = vertices[bi];
+		vec3 c = vertices[ci];
+
+		// Normals are weighed based on the inverse of the triangle's areas
+		vec3 normal = glm::cross(b - a, c - a);
+		const float area = normal.length() * 0.5f;
+		normal = glm::normalize(normal) * 1.0f / area;
+		normalLookup[ai] += normal;
+		normalLookup[bi] += normal;
+		normalLookup[ci] += normal;
+	}
+
+	std::vector<vec3> normals;
+	normals.reserve(vertices.size());
+	for (uint32 i = 0; i < vertices.size(); ++i)
+		normals.emplace_back(glm::normalize(normalLookup[i]));
+	m_mesh->SetNormals(normals);
+
 	bIsMeshBuilt = true;
 }
 

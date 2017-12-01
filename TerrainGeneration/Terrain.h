@@ -29,8 +29,7 @@ struct ivec2_KeyFuncs
 	{
 		return a.x == b.x && a.y == b.y;
 	}
-};
-
+}; 
 
 
 /**
