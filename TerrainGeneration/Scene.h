@@ -18,6 +18,7 @@ private:
 	/// Controllers
 	///
 	Camera m_camera;
+	float m_cameraCurrentSpeed;
 	Terrain* m_terrain = nullptr;
 
 

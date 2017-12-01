@@ -4,6 +4,7 @@
 void Scene::Build() 
 {
 	m_terrain = new Terrain(this);
+	m_camera.SetLocation(vec3(0, 10, 0));
 }
 
 void Scene::Destroy() 
@@ -25,22 +26,27 @@ void Scene::UpdateScene(Window& window, const float& deltaTime)
 		// Only moved if mouse is grabbed
 		if (mouse.IsGrabbed())
 		{
-			float moveSpeed = 2.0f;
+			const float baseMoveSpeed = 5.0f;
 			float mouseSensitivity = 1.18f * 0.05f;
 
+			if (keyboard.IsKeyDown(Keyboard::Key::KV_LSHIFT))
+				m_cameraCurrentSpeed += deltaTime * 3.0f;
+			else
+				m_cameraCurrentSpeed = baseMoveSpeed;
+
 			if (keyboard.IsKeyDown(Keyboard::Key::KV_W))
-				m_camera.Translate(m_camera.GetForward2D() * deltaTime * moveSpeed);
+				m_camera.Translate(m_camera.GetForward2D() * deltaTime * m_cameraCurrentSpeed);
 			if (keyboard.IsKeyDown(Keyboard::Key::KV_S))
-				m_camera.Translate(-m_camera.GetForward2D() * deltaTime * moveSpeed);
+				m_camera.Translate(-m_camera.GetForward2D() * deltaTime * m_cameraCurrentSpeed);
 			if (keyboard.IsKeyDown(Keyboard::Key::KV_D))
-				m_camera.Translate(m_camera.GetRight2D() * deltaTime * moveSpeed);
+				m_camera.Translate(m_camera.GetRight2D() * deltaTime * m_cameraCurrentSpeed);
 			if (keyboard.IsKeyDown(Keyboard::Key::KV_A))
-				m_camera.Translate(-m_camera.GetRight2D() * deltaTime * moveSpeed);
+				m_camera.Translate(-m_camera.GetRight2D() * deltaTime * m_cameraCurrentSpeed);
 
 			if (keyboard.IsKeyDown(Keyboard::Key::KV_SPACE))
-				m_camera.Translate(vec3(0, 1, 0) * deltaTime);
+				m_camera.Translate(vec3(0, 1, 0) * deltaTime * m_cameraCurrentSpeed);
 			if (keyboard.IsKeyDown(Keyboard::Key::KV_LCONTROL))
-				m_camera.Translate(vec3(0, -1, 0) * deltaTime);
+				m_camera.Translate(vec3(0, -1, 0) * deltaTime * m_cameraCurrentSpeed);
 
 			m_camera.SetEularRotation(m_camera.GetEularRotation() + vec3(-mouse.GetVelocity().y, -mouse.GetVelocity().x, 0) * mouseSensitivity);
 		}

@@ -11,6 +11,7 @@
 class Terrain;
 
 
+
 namespace Voxel 
 {
 	/** Supported voxel types */
@@ -24,11 +25,25 @@ namespace Voxel
 
 		Water,
 	};
+
+	/** Packet for passing around voxel density datas */
+	struct Packet 
+	{
+		float	density;
+		Type	type;
+	};
+
+	/** Is this type considered a material i.e. to be built with marching cubes */
+	inline bool IsMaterial(const Type& t) { return t != Type::Air && t != Type::Water; }
+
+	/** Is this type considered a liquid */
+	inline bool IsLiquid(const Type& t) { return t == Type::Water; }
 }
 
 
+
 /**
-* 
+* Holds all the voxel information for a small chunk of the terrain
 */
 class Chunk
 {
@@ -73,12 +88,22 @@ private:
 	* @param type			The type this voxel should be
 	*/
 	inline void Set(const int32& x, const int32& y, const int32& z, const Voxel::Type& type) { m_voxels[GetIndex(x, y, z)] = type; }
-
 	/**
 	* Retreive a specific voxel from local coordinates
+	* -Note: Will read other chunks, if necessiary
 	* @param x,y,z			The local coordinates of the voxel to set
 	*/
-	inline Voxel::Type Get(const int32& x, const int32& y, const int32& z) const { return m_voxels[GetIndex(x, y, z)]; }
+	Voxel::Type Get(const int32& x, const int32& y, const int32& z) const;
+
+	/**
+	* Attempt to retrive the voxel information about this packet
+	* -Note: Will read other chunks, if necessiary
+	* @param x,y,z			The local coordinates of the voxel to set
+	*/
+	Voxel::Packet GetVoxelData(const int32& x, const int32& y, const int32& z);
+
+	// TODO - MOVE
+	vec3 LerpVertex(ivec3 a, ivec3 b);
 
 
 	///
