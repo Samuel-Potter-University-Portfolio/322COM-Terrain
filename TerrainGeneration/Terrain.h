@@ -78,6 +78,34 @@ public:
 	//void RenderWater(Window& window, const float& deltaTime);
 
 
+	/**
+	* Get the chunk coordinates for what this voxels is in
+	* @param x,y,z			The world coordinates of the voxel to querry
+	* @returns The XZ chunk coordinates for the owner
+	*/
+	inline ivec2 GetChunkCoords(const int32& x, const int32& y, const int32& z) const
+	{
+		ivec2 out;
+
+		if (x < 0)
+			out.x = -1 + (x + 1) / CHUNK_SIZE;
+		else
+			out.x = x / CHUNK_SIZE;
+
+		if (z < 0)
+			out.y = -1 + (z + 1) / CHUNK_SIZE;
+		else
+			out.y = z / CHUNK_SIZE;
+
+		return out;
+	}
+
+	/**
+	* Retreive a specific voxel from world coordinates
+	* @param x,y,z			The world coordinates of the voxel to get
+	*/
+	Voxel::Type Get(const int32& x, const int32& y, const int32& z) const;
+
 private:
 	/**
 	* Attempt to get a new chunk

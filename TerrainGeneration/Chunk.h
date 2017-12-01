@@ -4,7 +4,7 @@
 #include "Mesh.h"
 
 
-#define CHUNK_SIZE 16
+#define CHUNK_SIZE 32
 #define CHUNK_HEIGHT 32
 
 
@@ -84,6 +84,7 @@ private:
 	/// Convect XYZ to a valid array index
 	inline static int32 GetIndex(const int32& x, const int32& y, const int32& z) { return x + z * CHUNK_SIZE + y * CHUNK_SIZE * CHUNK_SIZE; }
 
+public:
 	/**
 	* Sets a specific voxel from local coordinates
 	* @param x,y,z			The local coordinates of the voxel to set
@@ -97,6 +98,7 @@ private:
 	*/
 	Voxel::Type Get(const int32& x, const int32& y, const int32& z) const;
 
+private:
 	/**
 	* Attempt to retrive the voxel information about this packet
 	* -Note: Will read other chunks, if necessiary
@@ -106,6 +108,8 @@ private:
 
 	// TODO - MOVE
 	vec3 LerpVertex(ivec3 a, ivec3 b);
+public:
+	void TESTBUILD();
 
 
 	///

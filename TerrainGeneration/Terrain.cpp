@@ -70,9 +70,13 @@ Terrain::Terrain(Scene* scene) :
 		void main()
 		{
 			vec3 lightDirection = normalize(vec3(1, -1, 1));
-			float diffuse = max(dot(-lightDirection, normalize(passNormal)), 0.2);
+			vec3 normal = normalize(passNormal);
+			float diffuse = max(dot(-lightDirection, normal), 0.2);
 
-			outColour.rgb = vec3(1,1,1) * diffuse;
+			// Test texture based on normal/face
+			outColour.rgb = vec3(1,1,1);//abs(normal);
+
+			outColour.rgb *= diffuse;
 			outColour.a = 1;
 		}
 	)");
@@ -172,5 +176,18 @@ void Terrain::RenderTerrain(Window& window, const float& deltaTime)
 			testMaterial->PrepareMesh(*it.second->GetMesh());
 			testMaterial->RenderInstance(Transform());
 		}
+		else
+			it.second->TESTBUILD();
 	}
+}
+
+Voxel::Type Terrain::Get(const int32& x, const int32& y, const int32& z) const 
+{
+	ivec2 coords = GetChunkCoords(x, y, z);
+
+	auto it = m_activeChunks.find(coords);
+	if (it == m_activeChunks.end())
+		return Voxel::Type::Air;
+	else
+		return it->second->Get(x - coords.x * CHUNK_SIZE, y, z - coords.y * CHUNK_SIZE);
 }
