@@ -58,3 +58,9 @@ void Mesh::SetBufferData(const uint32& index, const void* data, const uint32& si
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 }
+
+void Mesh::DefaultRender() 
+{
+	if(m_triId != 0)
+		glDrawElements(GL_TRIANGLES, m_triangleCount, GL_UNSIGNED_INT, nullptr);
+}
