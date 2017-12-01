@@ -76,6 +76,8 @@ bool Window::Open(const WindowInit& settings)
 
 	// Set other settings
 	glfwSwapInterval(settings.bVerticalSync);
+	m_keyboard.Link(m_glfwWindow);
+	m_mouse.Link(m_glfwWindow);
 	return true;
 }
 
@@ -89,7 +91,8 @@ void Window::LaunchMainLoop(WindowCallback callback)
 	{
 		// Update controllers
 		glfwPollEvents();
-		m_keyboard.UpdateStates(m_glfwWindow);
+		m_keyboard.UpdateStates();
+		m_mouse.UpdateStates();
 
 		
 		// Update window vars

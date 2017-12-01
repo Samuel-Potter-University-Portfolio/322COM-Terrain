@@ -2,6 +2,7 @@
 #include "Common.h"
 
 #include "Keyboard.h"
+#include "Mouse.h";
 
 #include <functional>
 #include <GL\glew.h>
@@ -45,6 +46,8 @@ private:
 	/// Sub-controllers
 	///
 	Keyboard m_keyboard;
+	Mouse m_mouse;
+
 
 public:
 	/**
@@ -81,6 +84,7 @@ public:
 	inline int32 GetHeight() const { return m_height; }
 	inline float GetAspectRatio() const { return m_aspectRatio; }
 
-	inline const Keyboard& GetKeyboard() const { return m_keyboard; }
+	inline Keyboard& GetKeyboard() { return m_keyboard; }
+	inline Mouse& GetMouse() { return m_mouse; }
 };
 

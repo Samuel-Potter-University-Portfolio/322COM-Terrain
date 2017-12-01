@@ -112,6 +112,7 @@ private:
 		Repeating
 	};
 
+	struct GLFWwindow* m_glfwWindow;
 	KeyState m_states[Key::Last]{ Released };
 
 private:
@@ -121,11 +122,18 @@ private:
 	friend class Window;
 
 	/**
-	* Update the currently stored key states
+	* Link the keyboard to this window
 	* @param glfwWindow		The window to read update from
 	*/
-	void UpdateStates(struct GLFWwindow* glfwWindow);
+	inline void Link(struct GLFWwindow* glfwWindow) { m_glfwWindow = glfwWindow; }
 
+	/** Update the currently stored key states */
+	void UpdateStates();
+
+
+	///
+	/// Getters & Setters
+	///
 public:
 	/// Is key pressed
 	inline bool IsKeyDown(const Key& key) const { return m_states[key] != KeyState::Released; }

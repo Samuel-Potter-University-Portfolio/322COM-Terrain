@@ -31,6 +31,14 @@ void MainLoop(Window& window, const float& deltaTime)
 	if (window.GetKeyboard().IsKeyDown(Keyboard::Key::KV_LCONTROL))
 		testCamera.Translate(vec3(0, -1, 0) * deltaTime);
 
+	if (window.GetKeyboard().IsKeyDown(Keyboard::Key::KV_ESCAPE))
+	{
+		window.GetMouse().SetGrabbed(!window.GetMouse().IsGrabbed());
+	}
+	if(window.GetMouse().IsGrabbed())
+		testCamera.SetEularRotation(testCamera.GetEularRotation() + vec3(-window.GetMouse().GetVelocity().y, -window.GetMouse().GetVelocity().x, 0) * deltaTime * 10.0f);
+
+
 	testShader.SetCullFace(false);
 	testShader.Bind();
 
