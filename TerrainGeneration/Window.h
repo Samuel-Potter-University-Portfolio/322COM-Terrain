@@ -1,11 +1,10 @@
 #pragma once
 #include "Common.h"
 
+#include "Keyboard.h"
+
 #include <functional>
-
 #include <GL\glew.h>
-#include <GLFW\glfw3.h>
-
 
 
 typedef std::function<void(class Window& source, const float& deltaTime)> WindowCallback;
@@ -34,10 +33,18 @@ struct WindowInit
 class Window
 {
 private:
-	GLFWwindow* m_glfwWindow = nullptr;
+	///
+	/// Window varss
+	///
+	struct GLFWwindow* m_glfwWindow = nullptr;
 	int32 m_width;
 	int32 m_height;
 	float m_aspectRatio;
+
+	///
+	/// Sub-controllers
+	///
+	Keyboard m_keyboard;
 
 public:
 	/**
@@ -73,5 +80,7 @@ public:
 	inline int32 GetWidth() const { return m_width; }
 	inline int32 GetHeight() const { return m_height; }
 	inline float GetAspectRatio() const { return m_aspectRatio; }
+
+	inline const Keyboard& GetKeyboard() const { return m_keyboard; }
 };
 

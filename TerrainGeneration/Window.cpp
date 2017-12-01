@@ -1,6 +1,8 @@
 #include "Window.h"
 #include "Logger.h"
 
+#include <GLFW\glfw3.h>
+
 
 bool Window::InitAPI()
 {
@@ -85,8 +87,9 @@ void Window::LaunchMainLoop(WindowCallback callback)
 
 	while (!glfwWindowShouldClose(m_glfwWindow))
 	{
-		// TODO - Fetch settings
-		// TODO - Poll events
+		// Update controllers
+		glfwPollEvents();
+		m_keyboard.UpdateStates(m_glfwWindow);
 
 		
 		// Update window vars
@@ -104,7 +107,6 @@ void Window::LaunchMainLoop(WindowCallback callback)
 
 
 		glfwSwapBuffers(m_glfwWindow);
-		glfwPollEvents();
 	}
 
 	glfwDestroyWindow(m_glfwWindow);

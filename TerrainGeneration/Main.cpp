@@ -16,18 +16,40 @@ void MainLoop(Window& window, const float& deltaTime)
 	glClearColor(0.1451f, 0.1490f, 0.1922f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	
-	testCamera.Translate(vec3(0, 0, -1) * deltaTime);
+
+	if (window.GetKeyboard().IsKeyDown(Keyboard::Key::KV_W))
+		testCamera.Translate(testCamera.GetForward2D() * deltaTime);
+	if (window.GetKeyboard().IsKeyDown(Keyboard::Key::KV_S))
+		testCamera.Translate(-testCamera.GetForward2D() * deltaTime);
+	if (window.GetKeyboard().IsKeyDown(Keyboard::Key::KV_D))
+		testCamera.Translate(testCamera.GetRight2D() * deltaTime);
+	if (window.GetKeyboard().IsKeyDown(Keyboard::Key::KV_A))
+		testCamera.Translate(-testCamera.GetRight2D() * deltaTime);
+
+	if (window.GetKeyboard().IsKeyDown(Keyboard::Key::KV_SPACE))
+		testCamera.Translate(vec3(0, 1, 0) * deltaTime);
+	if (window.GetKeyboard().IsKeyDown(Keyboard::Key::KV_LCONTROL))
+		testCamera.Translate(vec3(0, -1, 0) * deltaTime);
 
 	testShader.SetCullFace(false);
 	testShader.Bind();
 
-	testShader.SetUniformMat4(testShader.GetUniform("ObjectToWorld"), mat4(1.0));
 	testShader.SetUniformMat4(testShader.GetUniform("WorldToView"), testCamera.GetViewMatrix());
 	testShader.SetUniformMat4(testShader.GetUniform("ViewToClip"), testCamera.GetPerspectiveMatrix(&window));
 	 
 	glBindVertexArray(testMesh->GetID());
 	//glDrawArrays(GL_TRIANGLES, 0, 3);
+	testShader.SetUniformMat4(testShader.GetUniform("ObjectToWorld"), mat4(1.0));
+	glDrawElements(GL_TRIANGLES, testMesh->GetTriangleCount(), GL_UNSIGNED_INT, nullptr);
+
+	Transform testTransform;
+	testTransform.SetLocation(vec3(-3, 0, 0));
+	testShader.SetUniformMat4(testShader.GetUniform("ObjectToWorld"), testTransform.GetTransformMatrix());
+	glDrawElements(GL_TRIANGLES, testMesh->GetTriangleCount(), GL_UNSIGNED_INT, nullptr);
+
+	Transform testTransform1;
+	testTransform1.SetLocation(vec3(3, 0, 0));
+	testShader.SetUniformMat4(testShader.GetUniform("ObjectToWorld"), testTransform1.GetTransformMatrix());
 	glDrawElements(GL_TRIANGLES, testMesh->GetTriangleCount(), GL_UNSIGNED_INT, nullptr);
 }
 
