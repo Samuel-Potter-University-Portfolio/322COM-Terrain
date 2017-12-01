@@ -20,10 +20,22 @@ private:
 public:
 	Transform();
 
-	/**
-	* Get the transformation matrix to use for this transform data
-	*/
+	/** Get the transformation matrix to use for this transform data */
 	mat4 GetTransformMatrix();
+
+	/** Get the forward vector for this transform */
+	vec3 GetForward();
+	/** Get the 2D forward vector (XZ) for this transform */
+	vec3 GetForward2D();
+
+	/** Get the right vector for this transform */
+	vec3 GetRight();
+	/** Get the 2D right vector (XZ) for this transform */
+	vec3 GetRight2D();
+
+	/** Get the up vector for this transform */
+	vec3 GetUp();
+
 
 	/**
 	* Getters & Setters
