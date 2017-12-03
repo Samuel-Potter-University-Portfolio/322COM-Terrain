@@ -5,6 +5,9 @@
 #include "MarchingCubes.h"
 #include <unordered_map>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <gtx\vector_angle.hpp>
+
 
 Chunk::Chunk(Terrain* terrain) :
 	m_terrain(terrain)
@@ -18,7 +21,7 @@ Chunk::Chunk(Terrain* terrain) :
 		for (uint32 z = 0; z < CHUNK_SIZE; ++z)
 		{
 			Set(x, 0, z, Voxel::Type::Stone);
-			uint32 maxHeight = (std::cos((float)x / CHUNK_SIZE * 3.141592f * 2.0f) + 1.0f) * 0.1f * CHUNK_SIZE;
+			uint32 maxHeight = (std::sin((float)x / CHUNK_SIZE * 3.141592f * 2.0f) + 1.0f) * 0.1f * CHUNK_SIZE;
 
 			if (x == 7 && z == 7)
 				maxHeight = 8;
@@ -223,6 +226,7 @@ void Chunk::TESTBUILD()
 	// Make normals out of weighted triangles
 	std::unordered_map<uint32, vec3> normalLookup;
 
+	// Generate normals from triss
 	for (uint32 i = 0; i < triangles.size(); i += 3)
 	{
 		uint32 ai = triangles[i];
@@ -233,19 +237,23 @@ void Chunk::TESTBUILD()
 		vec3 b = vertices[bi];
 		vec3 c = vertices[ci];
 
-		// Normals are weighed based on the inverse of the triangle's areas
-		vec3 normal = glm::cross(b - a, c - a);
-		const float area = normal.length() * 0.5f;
-		normal = glm::normalize(normal) / area;
-		normalLookup[ai] += normal;
-		normalLookup[bi] += normal;
-		normalLookup[ci] += normal;
+		
+		// Normals are weighed based on the angle of the edges that connect that corner
+		vec3 crossed = glm::cross(b - a, c - a);
+		vec3 normal = glm::normalize(crossed);
+		float area = crossed.length() * 0.5f;
+
+		normalLookup[ai] += crossed * glm::angle(b - a, c - a);
+		normalLookup[bi] += crossed * glm::angle(a - b, c - b);
+		normalLookup[ci] += crossed * glm::angle(a - c, b - c);
 	}
 
+	// Put normals into vector
 	std::vector<vec3> normals;
 	normals.reserve(vertices.size());
 	for (uint32 i = 0; i < vertices.size(); ++i)
-		normals.emplace_back(glm::normalize(normalLookup[i]));
+		normals.emplace_back(normalLookup[i]);
+
 	m_mesh->SetNormals(normals);
 
 	bIsMeshBuilt = true;

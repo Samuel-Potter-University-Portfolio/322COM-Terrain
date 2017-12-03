@@ -50,13 +50,13 @@ public:
 	* Store normals into the correct buffer
 	* @param normals		The vertex information to store
 	*/
-	inline void SetNormals(std::vector<vec3>& normals) { SetBufferData(1, normals.data(), normals.size() * sizeof(vec3), 3, true); }
+	inline void SetNormals(std::vector<vec3>& normals) { SetBufferData(1, normals.data(), normals.size() * sizeof(vec3), 3, false); }
 
 	/**
 	* Store colours into the correct buffer
 	* @param colours		The vertex information to store
 	*/
-	inline void SetColours(std::vector<vec4>& colours) { SetBufferData(2, colours.data(), colours.size() * sizeof(vec4), 4, true); }
+	inline void SetColours(std::vector<vec4>& colours) { SetBufferData(2, colours.data(), colours.size() * sizeof(vec4), 4, false); }
 
 	/**
 	* Store uvs into the correct buffer
