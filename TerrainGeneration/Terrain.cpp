@@ -118,8 +118,33 @@ void Terrain::RunWorker()
 
 	while (bWorkerRunning)
 	{
-		// Update at 60 ticks a second
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
+		try
+		{
+			// Try to execute all jobs, if there are any
+			while (m_activeJobQueue.size() != 0)
+			{
+				IChunkJob* job = m_activeJobQueue.front();
+
+				// Only execute job, if it hasn't been aborted
+				if (!job->IsAborted())
+					job->Execute();
+
+				// Job may have aborted during execution
+				if (!job->IsAborted())
+					m_completedJobQueue.emplace(job);
+				else
+					delete job;
+
+				m_activeJobQueue.pop();
+			}
+
+			// Update at 60 ticks a second
+			std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
+		}
+		catch (std::exception e)
+		{
+			LOG_ERROR("Exception caught in worker thread '%s'", e.what());
+		}
 	}
 
 	LOG("Terrain worker thread closed");
@@ -153,8 +178,9 @@ void Terrain::FreeChunk(Chunk* chunk)
 
 void Terrain::UpdateScene(Window& window, const float& deltaTime) 
 {
-	for (int32 x = -1; x <= 1; ++x)
-		for (int32 y = -1; y <= 1; ++y)
+	// Make sure desired chunks are active
+	for (int32 x = -2; x <= 2; ++x)
+		for (int32 y = -2; y <= 2; ++y)
 		{
 			ivec2 coords(x, y);
 			if (m_activeChunks.find(coords) == m_activeChunks.end())
@@ -163,6 +189,26 @@ void Terrain::UpdateScene(Window& window, const float& deltaTime)
 				TryGetNewChunk(chunk, coords);
 			}
 		}
+
+	// Try to fetch any jobs
+	for (auto it : m_activeChunks)
+	{
+		if (it.second->HasQueuedJob())
+			m_activeJobQueue.emplace(it.second->GetQueuedJob());
+	}
+
+	// Complete any jobs that need it
+	while (m_completedJobQueue.size() != 0)
+	{
+		IChunkJob* job = m_completedJobQueue.front();
+
+		// Only complete if not aborted
+		if (!job->IsAborted())
+			job->OnComplete();
+
+		m_completedJobQueue.pop();
+		delete job;
+	}
 }
 
 void Terrain::RenderTerrain(Window& window, const float& deltaTime) 
@@ -171,13 +217,11 @@ void Terrain::RenderTerrain(Window& window, const float& deltaTime)
 
 	for (auto it : m_activeChunks)
 	{
-		if (it.second->IsMeshBuilt())
+		if (it.second->IsTerrainMeshBuilt())
 		{
-			testMaterial->PrepareMesh(*it.second->GetMesh());
+			testMaterial->PrepareMesh(*it.second->GetTerrainMesh());
 			testMaterial->RenderInstance(Transform());
 		}
-		else
-			it.second->TESTBUILD();
 	}
 }
 

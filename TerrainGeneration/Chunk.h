@@ -1,7 +1,10 @@
 #pragma once
 #include "Common.h"
 
+#include "IChunkJob.h"
 #include "Mesh.h"
+
+#include <queue>
 
 
 #define CHUNK_SIZE 16
@@ -24,13 +27,6 @@ namespace Voxel
 		Stone,
 
 		Water,
-	};
-
-	/** Packet for passing around voxel density datas */
-	struct Packet 
-	{
-		float	density;
-		Type	type;
 	};
 
 	/** Is this type considered a material i.e. to be built with marching cubes */
@@ -58,9 +54,17 @@ private:
 	///
 	/// Rendering/Generating vars
 	///
-	Mesh* m_mesh = nullptr;
-	bool bHasGenerated = false;
-	bool bIsMeshBuilt = false;
+	Mesh* m_terrainMesh = nullptr;
+
+	friend class ChunkJob_Generate;
+	friend class ChunkJob_MeshTerrain;
+	bool bAreVoxelsGenerated = false;
+	bool bIsTerrainMeshBuilt = false;
+
+	///
+	/// Jobs
+	///
+	std::queue<IChunkJob*> m_jobQueue;
 
 public:
 	Chunk(Terrain* terrain);
@@ -98,18 +102,17 @@ public:
 	*/
 	Voxel::Type Get(const int32& x, const int32& y, const int32& z) const;
 
-private:
-	/**
-	* Attempt to retrive the voxel information about this packet
-	* -Note: Will read other chunks, if necessiary
-	* @param x,y,z			The local coordinates of the voxel to set
-	*/
-	Voxel::Packet GetVoxelData(const int32& x, const int32& y, const int32& z);
 
-	// TODO - MOVE
-	vec3 LerpVertex(ivec3 a, ivec3 b);
 public:
-	void TESTBUILD();
+	/// Are they any jobs for this chunk queued currently
+	inline bool HasQueuedJob() const { return m_jobQueue.size() != 0; }
+
+	/// Pops the next queued job
+	inline IChunkJob* GetQueuedJob() { IChunkJob* job = m_jobQueue.front(); m_jobQueue.pop(); return job; }
+
+protected:
+	/// Queues up this job for execution
+	inline void QueueJob(IChunkJob* job) { m_jobQueue.emplace(job); }
 
 
 	///
@@ -117,9 +120,9 @@ public:
 	///
 public:
 	inline ivec2 GetCoords() const { return m_chunkCoords; }
-	inline Mesh* GetMesh() const { return m_mesh; }
+	inline Mesh* GetTerrainMesh() const { return m_terrainMesh; }
 
-	inline bool HasGenerated() const { return bHasGenerated; }
-	inline bool IsMeshBuilt() const { return bIsMeshBuilt; }
+	inline bool HasVoxelsGenerated() const { return bAreVoxelsGenerated; }
+	inline bool IsTerrainMeshBuilt() const { return bIsTerrainMeshBuilt; }
 };
 

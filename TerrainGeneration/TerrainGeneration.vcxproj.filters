@@ -25,6 +25,12 @@
     <Filter Include="Header Files\Terrain">
       <UniqueIdentifier>{f04fd1d7-5465-4aa3-bc5d-03a5e369f931}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Terrain\Jobs">
+      <UniqueIdentifier>{a69119d9-382c-4165-9615-7b3ce473f9d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Terrain\Jobs">
+      <UniqueIdentifier>{82533b6f-9195-44fb-8c5b-35151289a0a8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -66,8 +72,11 @@
     <ClCompile Include="Chunk.cpp">
       <Filter>Source Files\Terrain</Filter>
     </ClCompile>
-    <ClCompile Include="IChunkJob.cpp">
-      <Filter>Source Files\Terrain</Filter>
+    <ClCompile Include="ChunkJob_Generate.cpp">
+      <Filter>Source Files\Terrain\Jobs</Filter>
+    </ClCompile>
+    <ClCompile Include="ChunkJob_MeshTerrain.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -110,11 +119,17 @@
     <ClInclude Include="Chunk.h">
       <Filter>Header Files\Terrain</Filter>
     </ClInclude>
-    <ClInclude Include="IChunkJob.h">
-      <Filter>Header Files\Terrain</Filter>
-    </ClInclude>
     <ClInclude Include="MarchingCubes.h">
       <Filter>Header Files\Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="IChunkJob.h">
+      <Filter>Header Files\Terrain\Jobs</Filter>
+    </ClInclude>
+    <ClInclude Include="ChunkJob_Generate.h">
+      <Filter>Header Files\Terrain\Jobs</Filter>
+    </ClInclude>
+    <ClInclude Include="ChunkJob_MeshTerrain.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

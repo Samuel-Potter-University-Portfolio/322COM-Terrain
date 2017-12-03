@@ -41,10 +41,12 @@ private:
 	Scene* m_parent;
 
 	///
-	/// Threading (Handles chunk generation/management jobs asynchronously)
+	/// Jobs & Working: Threading (Handles chunk generation/management jobs asynchronously)
 	///
 	std::thread* m_workerThread;
 	bool bWorkerRunning = false;
+	std::queue<IChunkJob*> m_activeJobQueue;
+	std::queue<IChunkJob*> m_completedJobQueue;
 
 	///
 	/// Chunk pooling

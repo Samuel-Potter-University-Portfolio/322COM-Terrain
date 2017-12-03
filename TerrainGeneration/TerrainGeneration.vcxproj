@@ -136,7 +136,8 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Chunk.cpp" />
-    <ClCompile Include="IChunkJob.cpp" />
+    <ClCompile Include="ChunkJob_Generate.cpp" />
+    <ClCompile Include="ChunkJob_MeshTerrain.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -152,6 +153,8 @@
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Chunk.h" />
+    <ClInclude Include="ChunkJob_Generate.h" />
+    <ClInclude Include="ChunkJob_MeshTerrain.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="IChunkJob.h" />
     <ClInclude Include="Keyboard.h" />
