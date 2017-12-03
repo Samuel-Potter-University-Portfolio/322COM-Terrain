@@ -5,6 +5,7 @@
 
 #include "Terrain.h"
 #include "ChunkJob_Generate.h"
+#include "ChunkJob_MeshTerrain.h"
 
 
 Chunk::Chunk(Terrain* terrain) :
@@ -80,4 +81,11 @@ IChunkJob* Chunk::GetQueuedJob()
 void Chunk::OnJobCompletion(IChunkJob* job) 
 {
 	m_activeJobs.erase(std::remove(m_activeJobs.begin(), m_activeJobs.end(), job), m_activeJobs.end());
+}
+
+void Chunk::OnAdjacentChunkGenerate() 
+{
+	// Rebuild mesh as this one may be out of date
+	if(bIsTerrainMeshBuilt)
+		QueueJob(new ChunkJob_MeshTerrain(this));
 }

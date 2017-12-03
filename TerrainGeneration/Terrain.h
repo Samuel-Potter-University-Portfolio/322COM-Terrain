@@ -108,6 +108,12 @@ public:
 	*/
 	Voxel::Type Get(const int32& x, const int32& y, const int32& z) const;
 
+	/**
+	* Callback for when a chunk finishes generation
+	* @param coords			The coords of the chunk that has just generated
+	*/
+	void NotifyChunkGeneration(const ivec2& coords);
+
 private:
 	/**
 	* Attempt to get a new chunk

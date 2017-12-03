@@ -1,5 +1,6 @@
 #include "ChunkJob_Generate.h"
 #include "Chunk.h"
+#include "Terrain.h"
 
 #include "ChunkJob_MeshTerrain.h"
 
@@ -48,8 +49,11 @@ void ChunkJob_Generate::Execute()
 
 void ChunkJob_Generate::OnComplete() 
 {
-	GetOwningChunk().bAreVoxelsGenerated = true;
+	Chunk& chunk = GetOwningChunk();
+
+	chunk.bAreVoxelsGenerated = true;
+	chunk.GetTerrain()->NotifyChunkGeneration(chunk.GetCoords());
 
 	// Build meshes
-	GetOwningChunk().QueueJob(new ChunkJob_MeshTerrain(&GetOwningChunk()));
+	chunk.QueueJob(new ChunkJob_MeshTerrain(&GetOwningChunk()));
 }

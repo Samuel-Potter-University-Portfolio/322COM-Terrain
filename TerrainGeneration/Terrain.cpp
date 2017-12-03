@@ -91,7 +91,7 @@ Terrain::~Terrain()
 	if (m_workerThread != nullptr)
 	{
 		bWorkerRunning = false;
-		m_workerThread->join();
+		//m_workerThread->join();
 		delete m_workerThread;
 	}
 
@@ -177,6 +177,7 @@ void Terrain::UpdateScene(Window& window, const float& deltaTime)
 	vec3 loadCentre = m_parent->GetCamera().GetLocation();
 	ivec2 centre = GetChunkCoords(loadCentre.x, loadCentre.y, loadCentre.z);
 
+
 	const int32 loadRadius = 4;
 	const int32 unloadRadius = 8; // Slightly larger to basically cache chunks
 
@@ -258,4 +259,19 @@ Voxel::Type Terrain::Get(const int32& x, const int32& y, const int32& z) const
 		return Voxel::Type::Air;
 	else
 		return it->second->Get(x - coords.x * CHUNK_SIZE, y, z - coords.y * CHUNK_SIZE);
+}
+
+void Terrain::NotifyChunkGeneration(const ivec2& coords) 
+{
+	// Notify adjacent chunks of the change
+	for (int32 x = -1; x <= 1; ++x)
+		for (int32 y = -1; y <= 1; ++y)
+		{
+			if (x == 0 && y == 0)
+				continue;
+
+			auto it = m_activeChunks.find(ivec2(coords.x + x, coords.y + y));
+			if (it != m_activeChunks.end())
+				it->second->OnAdjacentChunkGenerate();
+		}
 }

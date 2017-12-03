@@ -90,6 +90,9 @@ private:
 	inline static int32 GetIndex(const int32& x, const int32& y, const int32& z) { return x + z * CHUNK_SIZE + y * CHUNK_SIZE * CHUNK_SIZE; }
 
 public:
+	/** Callback for when an adjacent chunk has finished generation */
+	void OnAdjacentChunkGenerate();
+
 	/**
 	* Sets a specific voxel from local coordinates
 	* @param x,y,z			The local coordinates of the voxel to set
@@ -126,6 +129,8 @@ protected:
 	/// Getters & Setters
 	///
 public:
+	inline Terrain* GetTerrain() const { return m_terrain; }
+
 	inline ivec2 GetCoords() const { return m_chunkCoords; }
 	inline Mesh* GetTerrainMesh() const { return m_terrainMesh; }
 
