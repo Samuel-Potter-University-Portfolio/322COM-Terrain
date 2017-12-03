@@ -21,6 +21,8 @@ private:
 	uint32 m_width;
 	uint32 m_height;
 	bool bIsLoaded = false;
+
+	bool bUsesMipmaps = true;
 	bool bIsRepeated = true;
 	bool bIsSmooth = true;
 
@@ -57,5 +59,9 @@ public:
 
 	void SetSmooth(const bool& value);
 	inline bool IsSmooth() const { return bIsSmooth; }
+
+	/// Requires reload
+	void SetMipmapped(const bool& value) { bUsesMipmaps = value; }
+	inline bool IsMipmapped() const { return bUsesMipmaps; }
 };
 

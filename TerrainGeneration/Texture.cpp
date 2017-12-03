@@ -42,8 +42,7 @@ bool Texture::LoadFromFile(const string& file)
 		LOG_ERROR("Unable to read file '%s' (Unsupported file format)", file.c_str());
 		return false;
 	}
-
-
+	
 	data = FreeImage_Load(format, file.c_str());
 	if(data == nullptr)
 	{
@@ -53,7 +52,6 @@ bool Texture::LoadFromFile(const string& file)
 
 
 	// Read data
-	BYTE* rawBytes = FreeImage_GetBits(data);
 	m_width = FreeImage_GetWidth(data);
 	m_height = FreeImage_GetHeight(data);
 	uint32 bpp = FreeImage_GetBPP(data); // Bits per Pixel
@@ -64,20 +62,31 @@ bool Texture::LoadFromFile(const string& file)
 		return false;
 	}
 
+	// Convert to 32 bit
+	if (bpp != 32)
+	{
+		FIBITMAP* oldData = data;
+		data = FreeImage_ConvertTo32Bits(data);
+		FreeImage_Unload(oldData);
+	}
+
 
 	// Load into OpenGL
+	BYTE* rawBytes = FreeImage_GetBits(data);
+
 	glBindTexture(GL_TEXTURE_2D, m_id);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_DECAL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_DECAL);
 
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, bUsesMipmaps ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, bIsSmooth ? GL_LINEAR : GL_NEAREST);
 
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, bIsRepeated ? GL_CLAMP_TO_EDGE : GL_REPEAT);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, bIsRepeated ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, bIsRepeated ? GL_REPEAT : GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, bIsRepeated ? GL_REPEAT : GL_CLAMP_TO_EDGE);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_BGR, GL_UNSIGNED_BYTE, rawBytes);
-	glGenerateMipmap(GL_TEXTURE_2D);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_BGRA, GL_UNSIGNED_BYTE, rawBytes);
+	if(bUsesMipmaps)
+		glGenerateMipmap(GL_TEXTURE_2D);
 
 	FreeImage_Unload(data);
 	bIsLoaded = true;
@@ -92,8 +101,8 @@ void Texture::SetRepeated(const bool& value)
 		return;
 
 	glBindTexture(GL_TEXTURE_2D, m_id);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, bIsRepeated ? GL_CLAMP_TO_EDGE : GL_REPEAT);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, bIsRepeated ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, bIsRepeated ? GL_REPEAT : GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, bIsRepeated ? GL_REPEAT : GL_CLAMP_TO_EDGE);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
