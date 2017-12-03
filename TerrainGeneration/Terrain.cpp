@@ -1,6 +1,6 @@
 #include "Terrain.h"
 #include "Logger.h"
-
+#include "Scene.h"
 
 #include <chrono>
 
@@ -161,15 +161,11 @@ bool Terrain::TryGetNewChunk(Chunk*& outChunk, const ivec2& coord)
 	outChunk = m_chunkPool.front();
 	m_chunkPool.pop();
 
-	m_activeChunks[coord] = outChunk;
 	outChunk->Alloc(coord);
 	return true;
 }
 void Terrain::FreeChunk(Chunk* chunk) 
 {
-	// Remove from active chunks
-	m_activeChunks.erase(chunk->GetCoords());
-
 	// Add back into chunk pool
 	m_chunkPool.push(chunk);
 	chunk->Dealloc();
@@ -178,17 +174,42 @@ void Terrain::FreeChunk(Chunk* chunk)
 
 void Terrain::UpdateScene(Window& window, const float& deltaTime) 
 {
-	// Make sure desired chunks are active
-	for (int32 x = -2; x <= 2; ++x)
-		for (int32 y = -2; y <= 2; ++y)
+	vec3 loadCentre = m_parent->GetCamera().GetLocation();
+	ivec2 centre = GetChunkCoords(loadCentre.x, loadCentre.y, loadCentre.z);
+
+	const int32 loadRadius = 4;
+	const int32 unloadRadius = 8; // Slightly larger to basically cache chunks
+
+	// Unload any chunks which are outside of the area
+	for (auto it = m_activeChunks.begin(); it != m_activeChunks.end();)
+	{
+		const ivec2& coords = it->first;
+		if (std::abs(coords.x - centre.x) > unloadRadius || std::abs(coords.y - centre.y) > unloadRadius)
 		{
-			ivec2 coords(x, y);
+			// TODO - Cleanup any active jobs
+			FreeChunk(it->second);
+			m_activeChunks.erase(it++);
+		}
+		else
+			++it;
+	}
+
+	// Load chunks in load radius
+	for (int32 x = -loadRadius; x <= loadRadius; ++x)
+		for (int32 y = -loadRadius; y <= loadRadius; ++y)
+		{
+			ivec2 coords(centre.x + x, centre.y + y);
 			if (m_activeChunks.find(coords) == m_activeChunks.end())
 			{
 				Chunk* chunk;
-				TryGetNewChunk(chunk, coords);
+				if (TryGetNewChunk(chunk, coords))
+					m_activeChunks[coords] = chunk;
+				else
+					LOG_WARNING("Cannot load new chunk (%i,%i) as pool is empty", coords.x, coords.y);
 			}
 		}
+
+
 
 	// Try to fetch any jobs
 	for (auto it : m_activeChunks)

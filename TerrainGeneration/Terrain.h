@@ -51,7 +51,7 @@ private:
 	///
 	/// Chunk pooling
 	///
-	const uint32 m_poolSize = 40;
+	const uint32 m_poolSize = 200;
 	std::unordered_map<ivec2, Chunk*, ivec2_KeyFuncs> m_activeChunks;
 	std::queue<Chunk*> m_chunkPool;
 
