@@ -91,7 +91,7 @@ Terrain::~Terrain()
 	if (m_workerThread != nullptr)
 	{
 		bWorkerRunning = false;
-		//m_workerThread->join();
+		m_workerThread->join();
 		delete m_workerThread;
 	}
 
@@ -175,10 +175,10 @@ void Terrain::FreeChunk(Chunk* chunk)
 void Terrain::UpdateScene(Window& window, const float& deltaTime) 
 {
 	vec3 loadCentre = m_parent->GetCamera().GetLocation();
-	ivec2 centre = GetChunkCoords(loadCentre.x, loadCentre.y, loadCentre.z);
+	ivec2 centre = GetChunkCoords(std::round(loadCentre.x), std::round(loadCentre.y), std::round(loadCentre.z));
 
 
-	const int32 loadRadius = 4;
+	const int32 loadRange = 9;
 	const int32 unloadRadius = 8; // Slightly larger to basically cache chunks
 
 	// Unload any chunks which are outside of the area
@@ -195,21 +195,46 @@ void Terrain::UpdateScene(Window& window, const float& deltaTime)
 			++it;
 	}
 
-	// Load chunks in load radius
-	for (int32 x = -loadRadius; x <= loadRadius; ++x)
-		for (int32 y = -loadRadius; y <= loadRadius; ++y)
+	// Lambda for making sure a chunk is loaded
+	auto ensureChunkLoads = 
+	[this, centre](const uint32& x, const uint32& y)
+	{
+		ivec2 coords(centre.x + x, centre.y + y);
+		if (m_activeChunks.find(coords) == m_activeChunks.end())
 		{
-			ivec2 coords(centre.x + x, centre.y + y);
-			if (m_activeChunks.find(coords) == m_activeChunks.end())
-			{
-				Chunk* chunk;
-				if (TryGetNewChunk(chunk, coords))
-					m_activeChunks[coords] = chunk;
-				else
-					LOG_WARNING("Cannot load new chunk (%i,%i) as pool is empty", coords.x, coords.y);
-			}
+			Chunk* chunk;
+			if (TryGetNewChunk(chunk, coords))
+				m_activeChunks[coords] = chunk;
+			else
+				LOG_WARNING("Cannot load new chunk (%i,%i) as pool is empty", coords.x, coords.y);
 		}
+	};
 
+	// Load chunks in load radius (Build outwards from centre in a sprial)
+	// https://stackoverflow.com/questions/398299/looping-in-a-spiral
+	{
+		int32 x = 0;
+		int32 y = 0;
+		int32 dx = 0;
+		int32 dy = -1;
+
+		const uint32 max = loadRange*loadRange;
+
+		for (int32 i = 0; i < max; ++i)
+		{
+			if ((-loadRange / 2 < x) && (x <= loadRange / 2) && (-loadRange / 2 < y) && (y <= loadRange / 2))
+				ensureChunkLoads(x, y);
+
+			if ((x == y) || ((x < 0) && (x == -y)) || ((x > 0) && (x == 1 - y)))
+			{
+				int32 temp = dx;
+				dx = -dy;
+				dy = temp;
+			}
+			x += dx;
+			y += dy;
+		}
+	}
 
 
 	// Try to fetch any jobs
