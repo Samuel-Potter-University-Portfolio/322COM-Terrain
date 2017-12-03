@@ -64,7 +64,8 @@ private:
 	///
 	/// Jobs
 	///
-	std::queue<IChunkJob*> m_jobQueue;
+	std::queue<IChunkJob*> m_pendingJobQueue; 
+	std::vector<IChunkJob*> m_activeJobs;
 
 public:
 	Chunk(Terrain* terrain);
@@ -105,14 +106,20 @@ public:
 
 public:
 	/// Are they any jobs for this chunk queued currently
-	inline bool HasQueuedJob() const { return m_jobQueue.size() != 0; }
+	inline bool HasQueuedJob() const { return m_pendingJobQueue.size() != 0; }
 
-	/// Pops the next queued job
-	inline IChunkJob* GetQueuedJob() { IChunkJob* job = m_jobQueue.front(); m_jobQueue.pop(); return job; }
+	/** Pops the next queued job */
+	IChunkJob* GetQueuedJob();
+
+	/**
+	* Callback for when this job completes it's execution
+	* @param job			The newly completed job
+	*/
+	void OnJobCompletion(IChunkJob* job);
 
 protected:
 	/// Queues up this job for execution
-	inline void QueueJob(IChunkJob* job) { m_jobQueue.emplace(job); }
+	inline void QueueJob(IChunkJob* job) { m_pendingJobQueue.emplace(job); }
 
 
 	///

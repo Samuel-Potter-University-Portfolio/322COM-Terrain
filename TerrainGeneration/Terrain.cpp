@@ -225,7 +225,10 @@ void Terrain::UpdateScene(Window& window, const float& deltaTime)
 
 		// Only complete if not aborted
 		if (!job->IsAborted())
+		{
 			job->OnComplete();
+			job->GetOwningChunk().OnJobCompletion(job);
+		}
 
 		m_completedJobQueue.pop();
 		delete job;

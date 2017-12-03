@@ -1,6 +1,8 @@
 #include "Chunk.h"
 #include "Logger.h"
 
+#include <algorithm>
+
 #include "Terrain.h"
 #include "ChunkJob_Generate.h"
 
@@ -13,10 +15,10 @@ Chunk::Chunk(Terrain* terrain) :
 Chunk::~Chunk()
 {
 	// Delete any jobs still in the queue
-	while (m_jobQueue.size() != 0)
+	while (m_pendingJobQueue.size() != 0)
 	{
-		delete m_jobQueue.front();
-		m_jobQueue.pop();
+		delete m_pendingJobQueue.front();
+		m_pendingJobQueue.pop();
 	}
 
 	delete m_terrainMesh;
@@ -39,12 +41,15 @@ void Chunk::Dealloc()
 {
 	//LOG("Dealloc chunk (%i %i)", m_chunkCoords.x, m_chunkCoords.y);
 
+	// Abort any active jobs
+	for (IChunkJob* job : m_activeJobs)
+		job->Abort();
 
 	// Delete any jobs still in the queue
-	while (m_jobQueue.size() != 0)
+	while (m_pendingJobQueue.size() != 0)
 	{
-		delete m_jobQueue.front();
-		m_jobQueue.pop();
+		delete m_pendingJobQueue.front();
+		m_pendingJobQueue.pop();
 	}
 }
 
@@ -61,4 +66,18 @@ Voxel::Type Chunk::Get(const int32& x, const int32& y, const int32& z) const
 		return m_terrain->Get(x + m_chunkCoords.x * CHUNK_SIZE, y, z + m_chunkCoords.y * CHUNK_SIZE);
 
 	return m_voxels[GetIndex(x, y, z)]; 
+}
+
+
+IChunkJob* Chunk::GetQueuedJob() 
+{ 
+	IChunkJob* job = m_pendingJobQueue.front(); 
+	m_pendingJobQueue.pop(); 
+
+	m_activeJobs.emplace_back(job); 
+	return job;
+}
+void Chunk::OnJobCompletion(IChunkJob* job) 
+{
+	m_activeJobs.erase(std::remove(m_activeJobs.begin(), m_activeJobs.end(), job), m_activeJobs.end());
 }
