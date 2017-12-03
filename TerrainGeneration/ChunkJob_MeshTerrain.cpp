@@ -72,8 +72,10 @@ static IsoPacket GetIsoData(const Chunk& chunk, const int32& x, const int32& y, 
 * Interpolate between the iso data at these 2 vertices to get the correct mesh vertex
 * @param chunk			The chunk we're trying to look at
 * @param a,b			The local coordinates of the voxels to lerp between
+* @param outPosition	The lerped position to use
+* @param outType		The correect type to use
 */
-static vec3 LerpVertex(const Chunk& chunk, ivec3 a, ivec3 b)
+static void LerpVertex(const Chunk& chunk, ivec3 a, ivec3 b, vec3& outPosition, Voxel::Type& outType)
 {
 	IsoPacket ap = GetIsoData(chunk, a.x, a.y, a.z);
 	IsoPacket bp = GetIsoData(chunk, b.x, b.y, b.z);
@@ -82,9 +84,15 @@ static vec3 LerpVertex(const Chunk& chunk, ivec3 a, ivec3 b)
 	vec3 bf = b;
 
 	if (ap.level < bp.level)
-		return bf + (af - bf) * (bp.level - ap.level) * smoothness;
+	{
+		outPosition = bf + (af - bf) * (bp.level - ap.level) * smoothness;
+		outType = bp.type;
+	}
 	else
-		return af + (bf - af) * (ap.level - bp.level) * smoothness;
+	{
+		outPosition = af + (bf - af) * (ap.level - bp.level) * smoothness;
+		outType = ap.type;
+	}
 }
 
 
@@ -101,7 +109,7 @@ void ChunkJob_MeshTerrain::Execute()
 
 	std::unordered_map<vec3, uint32, vec3_KeyFuncs> vertexIndexLookup;
 	vec3 edges[12];
-	vec3 norms[12];
+	Voxel::Type types[12];
 
 
 	for (uint32 x = 0; x < CHUNK_SIZE; ++x)
@@ -126,29 +134,29 @@ void ChunkJob_MeshTerrain::Execute()
 
 				// Smooth edges based on density
 				if (MarchingCubes::CaseRequiredEdges[caseIndex] & 1)
-					edges[0] = LerpVertex(chunk, ivec3(x + 0, y + 0, z + 0), ivec3(x + 1, y + 0, z + 0));
+					LerpVertex(chunk, ivec3(x + 0, y + 0, z + 0), ivec3(x + 1, y + 0, z + 0), edges[0], types[0]);
 				if (MarchingCubes::CaseRequiredEdges[caseIndex] & 2)
-					edges[1] = LerpVertex(chunk, ivec3(x + 1, y + 0, z + 0), ivec3(x + 1, y + 0, z + 1));
+					LerpVertex(chunk, ivec3(x + 1, y + 0, z + 0), ivec3(x + 1, y + 0, z + 1), edges[1], types[1]);
 				if (MarchingCubes::CaseRequiredEdges[caseIndex] & 4)
-					edges[2] = LerpVertex(chunk, ivec3(x + 1, y + 0, z + 1), ivec3(x + 0, y + 0, z + 1));
+					LerpVertex(chunk, ivec3(x + 1, y + 0, z + 1), ivec3(x + 0, y + 0, z + 1), edges[2], types[2]);
 				if (MarchingCubes::CaseRequiredEdges[caseIndex] & 8)
-					edges[3] = LerpVertex(chunk, ivec3(x + 0, y + 0, z + 0), ivec3(x + 0, y + 0, z + 1));
+					LerpVertex(chunk, ivec3(x + 0, y + 0, z + 0), ivec3(x + 0, y + 0, z + 1), edges[3], types[3]);
 				if (MarchingCubes::CaseRequiredEdges[caseIndex] & 16)
-					edges[4] = LerpVertex(chunk, ivec3(x + 0, y + 1, z + 0), ivec3(x + 1, y + 1, z + 0));
+					LerpVertex(chunk, ivec3(x + 0, y + 1, z + 0), ivec3(x + 1, y + 1, z + 0), edges[4], types[4]);
 				if (MarchingCubes::CaseRequiredEdges[caseIndex] & 32)
-					edges[5] = LerpVertex(chunk, ivec3(x + 1, y + 1, z + 0), ivec3(x + 1, y + 1, z + 1));
+					LerpVertex(chunk, ivec3(x + 1, y + 1, z + 0), ivec3(x + 1, y + 1, z + 1), edges[5], types[5]);
 				if (MarchingCubes::CaseRequiredEdges[caseIndex] & 64)
-					edges[6] = LerpVertex(chunk, ivec3(x + 1, y + 1, z + 1), ivec3(x + 0, y + 1, z + 1));
+					LerpVertex(chunk, ivec3(x + 1, y + 1, z + 1), ivec3(x + 0, y + 1, z + 1), edges[6], types[6]);
 				if (MarchingCubes::CaseRequiredEdges[caseIndex] & 128)
-					edges[7] = LerpVertex(chunk, ivec3(x + 0, y + 1, z + 0), ivec3(x + 0, y + 1, z + 1));
+					LerpVertex(chunk, ivec3(x + 0, y + 1, z + 0), ivec3(x + 0, y + 1, z + 1), edges[7], types[7]);
 				if (MarchingCubes::CaseRequiredEdges[caseIndex] & 256)
-					edges[8] = LerpVertex(chunk, ivec3(x + 0, y + 0, z + 0), ivec3(x + 0, y + 1, z + 0));
+					LerpVertex(chunk, ivec3(x + 0, y + 0, z + 0), ivec3(x + 0, y + 1, z + 0), edges[8], types[8]);
 				if (MarchingCubes::CaseRequiredEdges[caseIndex] & 512)
-					edges[9] = LerpVertex(chunk, ivec3(x + 1, y + 0, z + 0), ivec3(x + 1, y + 1, z + 0));
+					LerpVertex(chunk, ivec3(x + 1, y + 0, z + 0), ivec3(x + 1, y + 1, z + 0), edges[9], types[9]);
 				if (MarchingCubes::CaseRequiredEdges[caseIndex] & 1024)
-					edges[10] = LerpVertex(chunk, ivec3(x + 1, y + 0, z + 1), ivec3(x + 1, y + 1, z + 1));
+					LerpVertex(chunk, ivec3(x + 1, y + 0, z + 1), ivec3(x + 1, y + 1, z + 1), edges[10], types[10]);
 				if (MarchingCubes::CaseRequiredEdges[caseIndex] & 2048)
-					edges[11] = LerpVertex(chunk, ivec3(x + 0, y + 0, z + 1), ivec3(x + 0, y + 1, z + 1));
+					LerpVertex(chunk, ivec3(x + 0, y + 0, z + 1), ivec3(x + 0, y + 1, z + 1), edges[11], types[11]);
 
 
 				// Add all needed edges to form triangles
@@ -168,6 +176,29 @@ void ChunkJob_MeshTerrain::Execute()
 						const uint32 index = m_vertices.size();
 						m_triangles.emplace_back(index);
 						m_vertices.emplace_back(vert);
+
+						// Encode type as colour
+						switch (types[edge])
+						{
+							case Voxel::Type::Grass:
+								m_colours.emplace_back(1, 0, 0, 0);
+								break;
+							case Voxel::Type::Dirt:
+								m_colours.emplace_back(0, 1, 0, 0);
+								break;
+							case Voxel::Type::Sand:
+								m_colours.emplace_back(0, 0, 1, 0);
+								break;
+							case Voxel::Type::Stone:
+								m_colours.emplace_back(0, 0, 0, 1);
+								break;
+
+							default:
+								m_colours.emplace_back(0, 0, 0, 0);
+								break;
+						}
+
+
 						vertexIndexLookup[vert] = index;
 					}
 
@@ -214,6 +245,7 @@ void ChunkJob_MeshTerrain::OnComplete()
 {
 	Mesh* mesh = GetOwningChunk().GetTerrainMesh();
 	mesh->SetVertices(m_vertices);
+	mesh->SetColours(m_colours);
 	mesh->SetNormals(m_normals);
 	mesh->SetTriangles(m_triangles);
 	GetOwningChunk().bIsTerrainMeshBuilt = true;

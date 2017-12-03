@@ -41,10 +41,12 @@ Terrain::Terrain(Scene* scene) :
 
 		layout (location = 0) in vec3 inPos;
 		layout (location = 1) in vec3 inNormal;
+		layout (location = 2) in vec4 inColour;
 
 		out vec3 passToCamera;
 		out vec3 passPos;
 		out vec3 passNormal;
+		out vec4 passColour;
 
 		void main()
 		{
@@ -55,6 +57,7 @@ Terrain::Terrain(Scene* scene) :
 			gl_Position = ViewToClip * WorldToView * worldLocation;
 			passPos = inPos.xyz;
 			passNormal = inNormal;
+			passColour = inColour;
 		}
 	)");
 	testShader->LoadFragmentShaderFromMemory(R"(
@@ -64,6 +67,7 @@ Terrain::Terrain(Scene* scene) :
 		in vec3 passToCamera;
 		in vec3 passPos;
 		in vec3 passNormal;
+		in vec4 passColour;
 
 		out vec4 outColour;
 
@@ -74,7 +78,7 @@ Terrain::Terrain(Scene* scene) :
 			float diffuse = max(dot(-lightDirection, normal), 0.2);
 
 			// Test texture based on normal/face
-			outColour.rgb = vec3(1,1,1);//abs(normal);
+			outColour.rgb = passColour.rgb;
 
 			outColour.rgb *= diffuse;
 			outColour.a = 1;

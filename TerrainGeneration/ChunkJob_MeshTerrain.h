@@ -19,6 +19,7 @@ private:
 	std::vector<uint32> m_triangles;
 	std::vector<vec3> m_vertices;
 	std::vector<vec3> m_normals;
+	std::vector<vec4> m_colours;
 
 
 public:

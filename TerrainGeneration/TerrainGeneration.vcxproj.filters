@@ -76,7 +76,7 @@
       <Filter>Source Files\Terrain\Jobs</Filter>
     </ClCompile>
     <ClCompile Include="ChunkJob_MeshTerrain.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Terrain\Jobs</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -129,7 +129,7 @@
       <Filter>Header Files\Terrain\Jobs</Filter>
     </ClInclude>
     <ClInclude Include="ChunkJob_MeshTerrain.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Terrain\Jobs</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
