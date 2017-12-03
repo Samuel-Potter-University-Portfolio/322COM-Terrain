@@ -6,9 +6,11 @@
 
 
 #include "Shader.h"
+#include "Texture.h"
 #include "Material.h"
 #include "Transform.h"
 
+Texture* testTexture;
 Shader* testShader;
 Material* testMaterial;
 
@@ -71,6 +73,8 @@ Terrain::Terrain(Scene* scene) :
 
 		out vec4 outColour;
 
+		uniform sampler2D texGrass;
+
 		void main()
 		{
 			vec3 lightDirection = normalize(vec3(1, -1, 1));
@@ -78,7 +82,7 @@ Terrain::Terrain(Scene* scene) :
 			float diffuse = max(dot(-lightDirection, normal), 0.2);
 
 			// Test texture based on normal/face
-			outColour.rgb = passColour.rgb;
+			outColour.rgb = texture(texGrass, vec2(0,0)).rgb;//passColour.rgb;
 
 			outColour.rgb *= diffuse;
 			outColour.a = 1;
@@ -87,6 +91,8 @@ Terrain::Terrain(Scene* scene) :
 	testShader->LinkShader();
 
 	testMaterial = new Material(testShader);
+	testTexture = new Texture;
+	testTexture->LoadFromFile("Resources\\dirt.jpg");
 }
 
 Terrain::~Terrain()
@@ -113,6 +119,7 @@ Terrain::~Terrain()
 
 	delete testMaterial;
 	delete testShader;
+	delete testTexture;
 }
 
 void Terrain::RunWorker() 
@@ -268,6 +275,9 @@ void Terrain::UpdateScene(Window& window, const float& deltaTime)
 void Terrain::RenderTerrain(Window& window, const float& deltaTime) 
 {
 	testMaterial->Bind(window, *m_parent);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, testTexture->GetID());
 
 	for (auto it : m_activeChunks)
 	{

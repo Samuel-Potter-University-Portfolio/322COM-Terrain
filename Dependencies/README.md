@@ -3,6 +3,7 @@ Requires libraries:
 -GLM (Built using 0.9.9-a1)
 -GLEW (Built using 2.1.0)
 -GLFW (Built using 3.2.1)
+-FreeImage (Built using 3.17.0)
 
 # GLM Setup
 Download the latest version of GLM
@@ -18,3 +19,7 @@ Rename to remove the version tag i.e glew-2.1.0 becomes glew
 Download the latest version of GLFW for both 64 and 32
 For each of the versions extract the main folder into here
 Rename each to remove the version tag and append the systems version to the end i.e glfw-3.2.1 32 bit version becomes GLFW-32
+
+# FreeImage Setup
+Download the latest version of FreeImage
+Extract the main folder into here
