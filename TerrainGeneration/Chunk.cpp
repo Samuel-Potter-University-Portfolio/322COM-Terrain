@@ -45,6 +45,7 @@ void Chunk::Dealloc()
 	// Abort any active jobs
 	for (IChunkJob* job : m_activeJobs)
 		job->Abort();
+	m_activeJobs.clear();
 
 	// Delete any jobs still in the queue
 	while (m_pendingJobQueue.size() != 0)
@@ -80,7 +81,15 @@ IChunkJob* Chunk::GetQueuedJob()
 }
 void Chunk::OnJobCompletion(IChunkJob* job) 
 {
-	m_activeJobs.erase(std::remove(m_activeJobs.begin(), m_activeJobs.end(), job), m_activeJobs.end());
+	// Only erase job if can find it (Might be from a previous pool)
+	for (uint32 i = 0; i < m_activeJobs.size(); ++i)
+	{
+		if (m_activeJobs[i] == job)
+		{
+			m_activeJobs.erase(m_activeJobs.begin() + i);
+			return;
+		}
+	}
 }
 
 void Chunk::OnAdjacentChunkGenerate() 

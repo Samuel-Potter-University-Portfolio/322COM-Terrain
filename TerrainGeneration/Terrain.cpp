@@ -22,6 +22,25 @@ SceneMaterial* testMaterial;
 Terrain::Terrain(Scene* scene) :
 	m_parent(scene)
 {
+#ifdef _DEBUG
+	m_workRadius = 5;
+	m_loadRadius = 4;
+	m_unloadRadius = 7;
+#else
+	m_workRadius = 8;
+	m_loadRadius = 16;
+	m_unloadRadius = 20;
+#endif
+
+	// Base pool size on unload range
+	m_poolSize = (m_unloadRadius * 2 + 1)*(m_unloadRadius * 2 + 1) + 40;
+
+	LOG("Chunk Settings:");
+	LOG("\t-WORK_RADIUS:\t%i", m_workRadius);
+	LOG("\t-LOAD_RADIUS:\t%i", m_loadRadius);
+	LOG("\t-UNLOAD_RADIUS:\t%i", m_unloadRadius);
+
+
 	m_workerThread = new std::thread(&Terrain::RunWorker, this);
 	m_activeChunks.reserve(m_poolSize);
 
@@ -188,23 +207,68 @@ void Terrain::RunWorker()
 	{
 		try
 		{
-			// Try to execute all jobs, if there are any
-			while (m_activeJobQueue.size() != 0)
+			ivec2 centre = m_loadCentre;
+
+			// Prioritse jobs from centre in a spiral outwards
+			// https://stackoverflow.com/questions/398299/looping-in-a-spiral
+			int32 x = 0;
+			int32 y = 0;
+			int32 dx = 0;
+			int32 dy = -1;
+
+			const int32 jobRange = m_workRadius * 2 + 1;
+			const uint32 max = jobRange*jobRange;
+
+			// Loop in spiral
+			for (int32 i = 0; i < max; ++i)
 			{
-				IChunkJob* job = m_activeJobQueue.front();
+				// Don't continue with jobs, as we've finished
+				if (!bWorkerRunning)
+					break;
 
-				// Only execute job, if it hasn't been aborted
-				if (!job->IsAborted())
-					job->Execute();
 
-				// Job may have aborted during execution
-				if (!job->IsAborted())
-					m_completedJobQueue.emplace(job);
-				else
-					delete job;
+				// Reset loop if centre has moved
+				if (centre != m_loadCentre)
+				{
+					i = 0;
+					x = 0;
+					y = 0;
+					dx = 0;
+					dy = -1;
+					centre = m_loadCentre;
+				}
 
-				m_activeJobQueue.pop();
+				// Execute iteration
+				if ((-jobRange / 2 < x) && (x <= jobRange / 2) && (-jobRange / 2 < y) && (y <= jobRange / 2))
+				{
+					auto it = m_activeChunks.find(m_loadCentre + ivec2(x, y));
+					if (it != m_activeChunks.end() && it->second->HasQueuedJob())
+					{
+						IChunkJob* job = it->second->GetQueuedJob();
+
+						// Only execute job, if it hasn't been aborted
+						if (!job->IsAborted())
+							job->Execute();
+
+						// Job may have aborted during execution
+						if (!job->IsAborted())
+							m_completedJobQueue.emplace(job);
+						else
+							delete job;
+					}
+				}
+
+				// Spiral logic
+				if ((x == y) || ((x < 0) && (x == -y)) || ((x > 0) && (x == 1 - y)))
+				{
+					int32 temp = dx;
+					dx = -dy;
+					dy = temp;
+				}
+				x += dx;
+				y += dy;
 			}
+
 
 			// Update at 60 ticks a second
 			std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
@@ -246,14 +310,11 @@ void Terrain::UpdateScene(Window& window, const float& deltaTime)
 	ivec2 centre = GetChunkCoords(std::round(loadCentre.x), std::round(loadCentre.y), std::round(loadCentre.z));
 
 
-	const int32 loadRange = 9;
-	const int32 unloadRadius = 8; // Slightly larger to basically cache chunks
-
 	// Unload any chunks which are outside of the area
 	for (auto it = m_activeChunks.begin(); it != m_activeChunks.end();)
 	{
 		const ivec2& coords = it->first;
-		if (std::abs(coords.x - centre.x) > unloadRadius || std::abs(coords.y - centre.y) > unloadRadius)
+		if (std::abs(coords.x - centre.x) > m_unloadRadius || std::abs(coords.y - centre.y) > m_unloadRadius)
 		{
 			// TODO - Cleanup any active jobs
 			FreeChunk(it->second);
@@ -263,54 +324,25 @@ void Terrain::UpdateScene(Window& window, const float& deltaTime)
 			++it;
 	}
 
-	// Lambda for making sure a chunk is loaded
-	auto ensureChunkLoads = 
-	[this, centre](const uint32& x, const uint32& y)
-	{
-		ivec2 coords(centre.x + x, centre.y + y);
-		if (m_activeChunks.find(coords) == m_activeChunks.end())
+	// Load any chunks which are in load area and aren't already loaded
+	for (int32 x = -m_loadRadius; x <= m_loadRadius; ++x)
+		for (int32 y = -m_loadRadius; y <= m_loadRadius; ++y)
 		{
-			Chunk* chunk;
-			if (TryGetNewChunk(chunk, coords))
-				m_activeChunks[coords] = chunk;
-			else
-				LOG_WARNING("Cannot load new chunk (%i,%i) as pool is empty", coords.x, coords.y);
-		}
-	};
-
-	// Load chunks in load radius (Build outwards from centre in a sprial)
-	// https://stackoverflow.com/questions/398299/looping-in-a-spiral
-	{
-		int32 x = 0;
-		int32 y = 0;
-		int32 dx = 0;
-		int32 dy = -1;
-
-		const uint32 max = loadRange*loadRange;
-
-		for (int32 i = 0; i < max; ++i)
-		{
-			if ((-loadRange / 2 < x) && (x <= loadRange / 2) && (-loadRange / 2 < y) && (y <= loadRange / 2))
-				ensureChunkLoads(x, y);
-
-			if ((x == y) || ((x < 0) && (x == -y)) || ((x > 0) && (x == 1 - y)))
+			ivec2 coords(centre.x + x, centre.y + y);
+			if (m_activeChunks.find(coords) == m_activeChunks.end())
 			{
-				int32 temp = dx;
-				dx = -dy;
-				dy = temp;
+				Chunk* chunk;
+				if (TryGetNewChunk(chunk, coords))
+					m_activeChunks[coords] = chunk;
+				else
+					LOG_WARNING("Cannot load new chunk (%i,%i) as pool is empty", coords.x, coords.y);
 			}
-			x += dx;
-			y += dy;
 		}
-	}
 
+	// Update centre after all chunks are in
+	m_loadCentre = centre;
 
-	// Try to fetch any jobs
-	for (auto it : m_activeChunks)
-	{
-		if (it.second->HasQueuedJob())
-			m_activeJobQueue.emplace(it.second->GetQueuedJob());
-	}
+	
 
 	// Complete any jobs that need it
 	while (m_completedJobQueue.size() != 0)

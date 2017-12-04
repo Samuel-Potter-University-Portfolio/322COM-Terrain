@@ -40,18 +40,30 @@ class Terrain
 private:
 	Scene* m_parent;
 
+
 	///
 	/// Jobs & Working: Threading (Handles chunk generation/management jobs asynchronously)
 	///
 	std::thread* m_workerThread;
 	bool bWorkerRunning = false;
-	std::queue<IChunkJob*> m_activeJobQueue;
+
+	/// Jobs that have succesfully completed go here, so they may perform any main thread logic
 	std::queue<IChunkJob*> m_completedJobQueue;
+
+	/// Where to currently load from
+	ivec2 m_loadCentre;
+	/// How close does a chunk have to be to be considered to work on
+	int32 m_workRadius = 5;
+	/// Chunks in this radius will be created, if they don't already exist
+	int32 m_loadRadius = 4;
+	/// How far away does a chunk have to be before being completely removed from memory
+	int32 m_unloadRadius = 7;
+
 
 	///
 	/// Chunk pooling
 	///
-	const uint32 m_poolSize = 200;
+	uint32 m_poolSize;
 	std::unordered_map<ivec2, Chunk*, ivec2_KeyFuncs> m_activeChunks;
 	std::queue<Chunk*> m_chunkPool;
 
