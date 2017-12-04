@@ -79,7 +79,7 @@ static void LerpVertex(const Chunk& chunk, ivec3 a, ivec3 b, vec3& outPosition, 
 {
 	IsoPacket ap = GetIsoData(chunk, a.x, a.y, a.z);
 	IsoPacket bp = GetIsoData(chunk, b.x, b.y, b.z);
-	const float smoothness = 0.5f;
+	const float smoothness = 1.0f;
 	vec3 af = a;
 	vec3 bf = b;
 

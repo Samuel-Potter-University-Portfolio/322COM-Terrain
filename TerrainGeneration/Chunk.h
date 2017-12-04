@@ -8,7 +8,7 @@
 
 
 #define CHUNK_SIZE 16
-#define CHUNK_HEIGHT 32
+#define CHUNK_HEIGHT 64
 
 
 class Terrain;

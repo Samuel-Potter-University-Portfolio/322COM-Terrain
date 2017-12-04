@@ -29,5 +29,13 @@ public:
 	* @returns Value between 0-1
 	*/
 	float GetOctave(const float& x, const float& y, const float& z, const uint32& octaves, const float& persistence);
+
+
+	///
+	/// Getters & Setters
+	///
+public:
+	inline void SetSeed(const uint32& value) { m_seed = value; }
+	inline uint32 GetSeed() const { return m_seed; }
 };
 

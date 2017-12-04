@@ -23,8 +23,7 @@ static const uint8 g_perlinPermutations[512]
 */
 inline static float FadeValue(const float& v)
 {
-	return v;
-	//return v*v*v * (v * (v * 6.0f - 15.0f) + 10.0f);
+	return v*v*v * (v * (v * 6.0f - 15.0f) + 10.0f);
 }
 
 /**
@@ -73,13 +72,19 @@ inline float CosLerp(const float& a, const float& b, const float& t)
 
 float PerlinNoise::Get01(const float& x, const float& y, const float& z) 
 {
+	// Transfrom input based on seed
+	float tX = std::abs(x + m_seed * 11.0f);
+	float tY = std::abs(y + m_seed * 7.0f);
+	float tZ = std::abs(z + m_seed * 13.0f);
+
 	// Get whole and fraction for xyz
-	int32 xW = ((int32)x + m_seed * 67) & 255;
-	int32 yW = ((int32)y + m_seed * 97) & 255;
-	int32 zW = ((int32)z + m_seed * 71) & 255;
-	float xF = x - (int32)x;
-	float yF = y - (int32)y;
-	float zF = z - (int32)z;
+	int32 xW = (int32)tX & 255;
+	int32 yW = (int32)tY & 255;
+	int32 zW = (int32)tZ & 255;
+	float xF = tX - (int32)tX;
+	float yF = tY - (int32)tY;
+	float zF = tZ - (int32)tZ;
+
 
 	// Get values to use for interpolation
 	float u = FadeValue(xF);
@@ -99,11 +104,10 @@ float PerlinNoise::Get01(const float& x, const float& y, const float& z)
 
 
 	// Get interpolated values along each axiss
-	const float vX00 = CosLerp(CalculateGradient(v000, xF, yF, zF), CalculateGradient(v100, xF - 1.0f, yF, zF), u);
-	const float vX10 = CosLerp(CalculateGradient(v010, xF, yF - 1.0f, zF), CalculateGradient(v110, xF - 1.0f, yF - 1.0f, zF), u);
-
-	const float vX01 = CosLerp(CalculateGradient(v000, xF, yF, zF - 1.0f), CalculateGradient(v100, xF - 1.0f, yF, zF - 1.0f), u);
-	const float vX11 = CosLerp(CalculateGradient(v010, xF, yF - 1.0f, zF - 1.0f), CalculateGradient(v110, xF - 1.0f, yF - 1.0f, zF - 1.0f), u);
+	const float vX00 = CosLerp(CalculateGradient(v000, xF - 0, yF - 0, zF - 0), CalculateGradient(v100, xF - 1, yF - 0, zF - 0), u);
+	const float vX10 = CosLerp(CalculateGradient(v010, xF - 0, yF - 1, zF - 0), CalculateGradient(v110, xF - 1, yF - 1, zF - 0), u);
+	const float vX01 = CosLerp(CalculateGradient(v001, xF - 0, yF - 0, zF - 1), CalculateGradient(v101, xF - 1, yF - 0, zF - 1), u);
+	const float vX11 = CosLerp(CalculateGradient(v011, xF - 0, yF - 1, zF - 1), CalculateGradient(v111, xF - 1, yF - 1, zF - 1), u);
 
 	const float vY0 = CosLerp(vX00, vX10, v);
 	const float vY1 = CosLerp(vX01, vX11, v);
