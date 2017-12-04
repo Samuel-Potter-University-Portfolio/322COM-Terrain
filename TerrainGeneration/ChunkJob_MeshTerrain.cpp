@@ -79,7 +79,7 @@ static void LerpVertex(const Chunk& chunk, ivec3 a, ivec3 b, vec3& outPosition, 
 {
 	IsoPacket ap = GetIsoData(chunk, a.x, a.y, a.z);
 	IsoPacket bp = GetIsoData(chunk, b.x, b.y, b.z);
-	const float smoothness = 1.0f;
+	const float smoothness = 0.5f;
 	vec3 af = a;
 	vec3 bf = b;
 
@@ -111,10 +111,15 @@ void ChunkJob_MeshTerrain::Execute()
 	vec3 edges[12];
 	Voxel::Type types[12];
 
+	// Extra triangles (Used for generating normal at the edge of chunk
+	std::unordered_map<vec3, uint32, vec3_KeyFuncs> extraIndexLookup;
+	std::vector<uint32> extraTriangles;
+	std::vector<vec3> extraVertices;
 
-	for (uint32 x = 0; x < CHUNK_SIZE; ++x)
-		for (uint32 y = 0; y < CHUNK_HEIGHT; ++y)
-			for (uint32 z = 0; z < CHUNK_SIZE; ++z)
+
+	for (int32 x = -1; x <= CHUNK_SIZE; ++x)
+		for (int32 y = 0; y < CHUNK_HEIGHT; ++y)
+			for (int32 z = -1; z <= CHUNK_SIZE; ++z)
 			{
 				// Aborted, so stop execution here
 				if (IsAborted())
@@ -166,20 +171,41 @@ void ChunkJob_MeshTerrain::Execute()
 					int8 edge = *(caseEdges++);
 					vec3 vert = chunkOffset + edges[edge];
 
-					// Reuse old vertex (Lets us to normal smoothing)
-					auto it = vertexIndexLookup.find(vert);
-					if (it != vertexIndexLookup.end())
-						m_triangles.emplace_back(it->second);
+					// Is extra triangle (Used for normal calculations)
+					if (x == -1 || x == CHUNK_SIZE || z == -1 || z == CHUNK_SIZE)
+					{
+						// Reuse old vertex (Lets us do normal smoothing)
+						auto it = extraIndexLookup.find(vert);
+						if (it != extraIndexLookup.end())
+							extraTriangles.emplace_back(it->second);
 
+						else
+						{
+							const uint32 index = extraVertices.size();
+							extraTriangles.emplace_back(index);
+							extraVertices.emplace_back(vert);
+
+							extraIndexLookup[vert] = index;
+						}
+					}
+
+					// Is normal triangle
 					else
 					{
-						const uint32 index = m_vertices.size();
-						m_triangles.emplace_back(index);
-						m_vertices.emplace_back(vert);
+						// Reuse old vertex (Lets us do normal smoothing)
+						auto it = vertexIndexLookup.find(vert);
+						if (it != vertexIndexLookup.end())
+							m_triangles.emplace_back(it->second);
 
-						// Encode type as colour
-						switch (types[edge])
+						else
 						{
+							const uint32 index = m_vertices.size();
+							m_triangles.emplace_back(index);
+							m_vertices.emplace_back(vert);
+
+							// Encode type as colour
+							switch (types[edge])
+							{
 							case Voxel::Type::Grass:
 								m_colours.emplace_back(1, 0, 0, 0);
 								break;
@@ -196,10 +222,10 @@ void ChunkJob_MeshTerrain::Execute()
 							default:
 								m_colours.emplace_back(0, 0, 0, 0);
 								break;
+							}
+
+							vertexIndexLookup[vert] = index;
 						}
-
-
-						vertexIndexLookup[vert] = index;
 					}
 
 				}
@@ -233,6 +259,45 @@ void ChunkJob_MeshTerrain::Execute()
 		normalLookup[ai] += crossed * glm::angle(b - a, c - a);
 		normalLookup[bi] += crossed * glm::angle(a - b, c - b);
 		normalLookup[ci] += crossed * glm::angle(a - c, b - c);
+	}
+	// Repeat process for extra triangles
+	for (uint32 i = 0; i < extraTriangles.size(); i += 3)
+	{
+		// Aborted, so stop execution here
+		if (IsAborted())
+			return;
+
+		uint32 ai = extraTriangles[i];
+		uint32 bi = extraTriangles[i + 1];
+		uint32 ci = extraTriangles[i + 2];
+
+		vec3 a = extraVertices[ai];
+		vec3 b = extraVertices[bi];
+		vec3 c = extraVertices[ci];
+
+
+		// Normals are weighed based on the angle of the edges that connect that corner
+		vec3 crossed = glm::cross(b - a, c - a);
+		vec3 normal = glm::normalize(crossed);
+		float area = crossed.length() * 0.5f;
+
+
+		// Only store if the vertex is not an extra vertex
+		{
+			auto it = vertexIndexLookup.find(a);
+			if (it != vertexIndexLookup.end())
+				normalLookup[it->second] += crossed * glm::angle(b - a, c - a);
+		}
+		{
+			auto it = vertexIndexLookup.find(b);
+			if (it != vertexIndexLookup.end())
+				normalLookup[it->second] += crossed * glm::angle(a - b, c - b);
+		}
+		{
+			auto it = vertexIndexLookup.find(c);
+			if (it != vertexIndexLookup.end())
+				normalLookup[it->second] += crossed * glm::angle(a - c, b - c);
+		}
 	}
 
 	// Put normals into vector
