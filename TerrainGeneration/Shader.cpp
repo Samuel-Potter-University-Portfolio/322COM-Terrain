@@ -143,6 +143,10 @@ void Shader::SetUniformInt(const uint32& id, const int32& value)
 {
 	glUniform1i(id, value);
 }
+void Shader::SetUniformUInt(const uint32& id, const uint32& value)
+{
+	glUniform1ui(id, value);
+}
 
 void Shader::SetUniformVec2(const uint32& id, const vec2& value) 
 {

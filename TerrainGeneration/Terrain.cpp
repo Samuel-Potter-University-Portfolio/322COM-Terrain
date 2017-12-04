@@ -10,7 +10,10 @@
 #include "Material.h"
 #include "Transform.h"
 
-Texture* testTexture;
+Texture* testTexture0;
+Texture* testTexture1;
+Texture* testTexture2;
+Texture* testTexture3;
 Shader* testShader;
 Material* testMaterial;
 
@@ -20,6 +23,7 @@ Terrain::Terrain(Scene* scene) :
 	m_parent(scene)
 {
 	m_workerThread = new std::thread(&Terrain::RunWorker, this);
+	m_activeChunks.reserve(sizeof(ivec2) * m_poolSize * 2);
 
 	// Setup chunk pool
 	for (uint32 i = 0; i < m_poolSize; ++i)
@@ -57,13 +61,13 @@ Terrain::Terrain(Scene* scene) :
 			passToCamera = worldLocation.xyz - cameraLocation;
 
 			gl_Position = ViewToClip * WorldToView * worldLocation;
-			passPos = inPos.xyz;
+			passPos = worldLocation.xyz;
 			passNormal = inNormal;
 			passColour = inColour;
 		}
 	)");
 	testShader->LoadFragmentShaderFromMemory(R"(
-		#version 330 core
+		#version 420 core
 
 				
 		in vec3 passToCamera;
@@ -73,7 +77,45 @@ Terrain::Terrain(Scene* scene) :
 
 		out vec4 outColour;
 
-		uniform sampler2D texGrass;
+		layout(binding = 0) uniform sampler2D texChannel0;
+		layout(binding = 1) uniform sampler2D texChannel1;
+		layout(binding = 2) uniform sampler2D texChannel2;
+		layout(binding = 3) uniform sampler2D texChannel3;
+
+
+		/// Get the texture colour for this normal
+		vec4 GetTextureColour(sampler2D tex, vec3 anorm)
+		{
+			vec4 value;
+
+			// Perform tri-planar projection
+			if(anorm.x != 0)
+				value = anorm.x * texture(tex, passPos.yz);
+			if(anorm.y != 0)
+				value = value + anorm.y * texture(tex, passPos.xz);
+			if(anorm.z != 0)
+				value = value + anorm.z * texture(tex, passPos.xy);
+
+			return value;
+		}
+
+		/// Calculate colour
+		vec4 GetColour()
+		{
+			vec3 anorm = normalize(vec3(abs(passNormal.x), abs(passNormal.y), abs(passNormal.z)));
+			vec4 value;
+
+			if(passColour.r != 0)
+				value = passColour.r * GetTextureColour(texChannel0, anorm);
+			if(passColour.g != 0)
+				value = value + passColour.g * GetTextureColour(texChannel1, anorm);
+			if(passColour.b != 0)
+				value = value + passColour.b * GetTextureColour(texChannel2, anorm);
+			if(passColour.a != 0)
+				value = value + passColour.a * GetTextureColour(texChannel3, anorm);
+
+			return value;
+		}
 
 		void main()
 		{
@@ -82,17 +124,22 @@ Terrain::Terrain(Scene* scene) :
 			float diffuse = max(dot(-lightDirection, normal), 0.2);
 
 			// Test texture based on normal/face
-			outColour.rgb = texture(texGrass, vec2(0,0)).rgb;//passColour.rgb;
-
-			outColour.rgb *= diffuse;
-			outColour.a = 1;
+			//outColour.rgb = texture(texChannel1, GetUVs()).rgb;
+			outColour = GetColour();
 		}
 	)");
 	testShader->LinkShader();
 
 	testMaterial = new Material(testShader);
-	testTexture = new Texture;
-	testTexture->LoadFromFile("Resources\\dirt.jpg");
+
+	testTexture0 = new Texture;
+	testTexture0->LoadFromFile("Resources\\grass.png");
+	testTexture1 = new Texture;
+	testTexture1->LoadFromFile("Resources\\dirt.jpg");
+	testTexture2 = new Texture;
+	testTexture2->LoadFromFile("Resources\\sand.png");
+	testTexture3 = new Texture;
+	testTexture3->LoadFromFile("Resources\\stone.jpg");
 }
 
 Terrain::~Terrain()
@@ -100,6 +147,7 @@ Terrain::~Terrain()
 	// Clean up worker thread
 	if (m_workerThread != nullptr)
 	{
+		LOG("Waiting for worker to finish..");
 		bWorkerRunning = false;
 		m_workerThread->join();
 		delete m_workerThread;
@@ -119,7 +167,10 @@ Terrain::~Terrain()
 
 	delete testMaterial;
 	delete testShader;
-	delete testTexture;
+	delete testTexture0;
+	delete testTexture1;
+	delete testTexture2;
+	delete testTexture3;
 }
 
 void Terrain::RunWorker() 
@@ -276,8 +327,15 @@ void Terrain::RenderTerrain(Window& window, const float& deltaTime)
 {
 	testMaterial->Bind(window, *m_parent);
 
+
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, testTexture->GetID());
+	glBindTexture(GL_TEXTURE_2D, testTexture0->GetID());
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, testTexture1->GetID());
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, testTexture2->GetID());
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, testTexture3->GetID());
 
 	for (auto it : m_activeChunks)
 	{

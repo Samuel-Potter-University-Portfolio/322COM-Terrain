@@ -80,6 +80,12 @@ public:
 	* @param value		The value to load into the location
 	*/
 	void SetUniformInt(const uint32& id, const int32& value);
+	/**
+	* Load a int into this unform id
+	* @param id			The id of the uniform (fetched from GetUniform)
+	* @param value		The value to load into the location
+	*/
+	void SetUniformUInt(const uint32& id, const uint32& value);
 
 	/**
 	* Load a vec2 into this unform id
