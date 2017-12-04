@@ -15,7 +15,7 @@ Texture* testTexture1;
 Texture* testTexture2;
 Texture* testTexture3;
 Shader* testShader;
-Material* testMaterial;
+SceneMaterial* testMaterial;
 
 
 
@@ -23,7 +23,7 @@ Terrain::Terrain(Scene* scene) :
 	m_parent(scene)
 {
 	m_workerThread = new std::thread(&Terrain::RunWorker, this);
-	m_activeChunks.reserve(sizeof(ivec2) * m_poolSize * 2);
+	m_activeChunks.reserve(m_poolSize);
 
 	// Setup chunk pool
 	for (uint32 i = 0; i < m_poolSize; ++i)
@@ -87,14 +87,16 @@ Terrain::Terrain(Scene* scene) :
 		vec4 GetTextureColour(sampler2D tex, vec3 anorm)
 		{
 			vec4 value;
-
+			vec3 blend = anorm;
+			blend /= blend.x + blend.y + blend.z;
+			
 			// Perform tri-planar projection
-			if(anorm.x != 0)
-				value = anorm.x * texture(tex, passPos.yz);
-			if(anorm.y != 0)
-				value = value + anorm.y * texture(tex, passPos.xz);
-			if(anorm.z != 0)
-				value = value + anorm.z * texture(tex, passPos.xy);
+			if(blend.x != 0)
+				value = blend.x * texture(tex, passPos.yz);
+			if(blend.y != 0)
+				value = value + blend.y * texture(tex, passPos.xz);
+			if(blend.z != 0)
+				value = value + blend.z * texture(tex, passPos.xy);
 
 			return value;
 		}
@@ -103,16 +105,19 @@ Terrain::Terrain(Scene* scene) :
 		vec4 GetColour()
 		{
 			vec3 anorm = normalize(vec3(abs(passNormal.x), abs(passNormal.y), abs(passNormal.z)));
+			vec4 textureWeights = normalize(passColour);
+			textureWeights /= textureWeights.x + textureWeights.y + textureWeights.z + textureWeights.w;
 			vec4 value;
 
-			if(passColour.r != 0)
-				value = passColour.r * GetTextureColour(texChannel0, anorm);
-			if(passColour.g != 0)
-				value = value + passColour.g * GetTextureColour(texChannel1, anorm);
-			if(passColour.b != 0)
-				value = value + passColour.b * GetTextureColour(texChannel2, anorm);
-			if(passColour.a != 0)
-				value = value + passColour.a * GetTextureColour(texChannel3, anorm);
+
+			if(textureWeights.r != 0)
+				value = textureWeights.r * GetTextureColour(texChannel0, anorm);
+			if(textureWeights.g != 0)
+				value = value + textureWeights.g * GetTextureColour(texChannel1, anorm);
+			if(textureWeights.b != 0)
+				value = value + textureWeights.b * GetTextureColour(texChannel2, anorm);
+			if(textureWeights.a != 0)
+				value = value + textureWeights.a * GetTextureColour(texChannel3, anorm);
 
 			return value;
 		}
@@ -125,12 +130,13 @@ Terrain::Terrain(Scene* scene) :
 
 			// Test texture based on normal/face
 			//outColour.rgb = texture(texChannel1, GetUVs()).rgb;
-			outColour = GetColour();
+			outColour = GetColour() * diffuse;
 		}
 	)");
 	testShader->LinkShader();
 
-	testMaterial = new Material(testShader);
+	testMaterial = new SceneMaterial;
+	testMaterial->OverrideShader(testShader);
 
 	testTexture0 = new Texture;
 	testTexture0->LoadFromFile("Resources\\grass.png");

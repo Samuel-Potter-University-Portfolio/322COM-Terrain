@@ -18,10 +18,10 @@ void ChunkJob_Generate::Execute()
 		for (uint32 z = 0; z < CHUNK_SIZE; ++z)
 			chunk.Set(x, 0, z, Voxel::Type::Dirt);
 
-	for (uint32 x = 0; x < 8; ++x)
-		for (uint32 z = 0; z < 8; ++z)
+	for (uint32 x = 0; x < CHUNK_SIZE; ++x)
+		for (uint32 z = 0; z < CHUNK_SIZE; ++z)
 		{
-			uint32 maxHeight = (std::sin((float)x / 8 * 3.141592f * 2.0f) + 1.0f) * 0.1f * 8;
+			uint32 maxHeight = (std::cos((float)x / CHUNK_SIZE * 3.141592f * 2.0f) + 1.0f) * 0.1f * CHUNK_SIZE;
 			
 			for (uint32 y = 1; y < maxHeight + 1; ++y)
 				chunk.Set(x, y, z, Voxel::Type::Grass);
@@ -29,12 +29,12 @@ void ChunkJob_Generate::Execute()
 
 	chunk.Set(4, 1, 4, Voxel::Type::Sand);
 	chunk.Set(5, 1, 4, Voxel::Type::Sand);
-	chunk.Set(6, 1, 4, Voxel::Type::Sand);
-	chunk.Set(4, 1, 5, Voxel::Type::Sand);
+	chunk.Set(6, 1, 4, Voxel::Type::Stone);
+	chunk.Set(4, 1, 5, Voxel::Type::Stone);
 	chunk.Set(5, 1, 5, Voxel::Type::Sand);
 	chunk.Set(6, 1, 5, Voxel::Type::Sand);
-	chunk.Set(4, 1, 6, Voxel::Type::Sand);
-	chunk.Set(5, 1, 6, Voxel::Type::Sand);
+	chunk.Set(4, 1, 6, Voxel::Type::Stone);
+	chunk.Set(5, 1, 6, Voxel::Type::Stone);
 	chunk.Set(6, 1, 6, Voxel::Type::Sand);
 
 	chunk.Set(5, 5, 5, Voxel::Type::Stone);
