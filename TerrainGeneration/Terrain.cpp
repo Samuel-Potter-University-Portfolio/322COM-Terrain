@@ -313,13 +313,16 @@ void Terrain::UpdateScene(Window& window, const float& deltaTime)
 	ivec2 centre = GetChunkCoords(std::round(loadCentre.x), std::round(loadCentre.y), std::round(loadCentre.z));
 
 
+	// Print centre information
+	if (window.GetKeyboard().IsKeyReleased(Keyboard::Key::KV_C))
+		LOG("Load centre (%i, %i)", centre.x, centre.y);
+
+
+	// Only update if centre has changed
 	if (centre != m_previousCentre)
 	{
 		const std::lock_guard<std::mutex> guard(m_chunkAccessMutex);
 
-		// Print centre information
-		if (window.GetKeyboard().IsKeyReleased(Keyboard::Key::KV_C))
-			LOG("Load centre (%i, %i)", centre.x, centre.y);
 
 		// Unload any chunks which are outside of the area
 		for (auto it = m_activeChunks.begin(); it != m_activeChunks.end();)

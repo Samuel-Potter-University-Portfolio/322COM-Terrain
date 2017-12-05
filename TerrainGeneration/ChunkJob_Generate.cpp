@@ -17,7 +17,7 @@ void ChunkJob_Generate::Execute()
 
 
 	PerlinNoise noise;
-	noise.SetSeed(1234);
+	noise.SetSeed(0);
 	const float scale = 0.01f;
 
 	// TEST GEN TERRAIN

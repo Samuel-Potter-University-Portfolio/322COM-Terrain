@@ -53,6 +53,10 @@ void Chunk::Dealloc()
 		delete m_pendingJobQueue.front();
 		m_pendingJobQueue.pop();
 	}
+
+	// Clear voxels
+	for (Voxel::Type& v : m_voxels)
+		v = Voxel::Type::Air;
 }
 
 

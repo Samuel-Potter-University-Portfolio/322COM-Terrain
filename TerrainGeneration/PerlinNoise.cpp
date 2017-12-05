@@ -76,7 +76,6 @@ float PerlinNoise::Get01(const float& x, const float& y, const float& z)
 	float tX = std::abs(x + m_seed * 11.0f);
 	float tY = std::abs(y + m_seed * 7.0f);
 	float tZ = std::abs(z + m_seed * 13.0f);
-
 	// Get whole and fraction for xyz
 	int32 xW = (int32)tX & 255;
 	int32 yW = (int32)tY & 255;
