@@ -309,6 +309,9 @@ void Terrain::UpdateScene(Window& window, const float& deltaTime)
 	vec3 loadCentre = m_parent->GetCamera().GetLocation();
 	ivec2 centre = GetChunkCoords(std::round(loadCentre.x), std::round(loadCentre.y), std::round(loadCentre.z));
 
+	// Print centre information
+	if (window.GetKeyboard().IsKeyReleased(Keyboard::Key::KV_C))
+		LOG("Load centre (%i, %i)", centre.x, centre.y);
 
 	// Unload any chunks which are outside of the area
 	for (auto it = m_activeChunks.begin(); it != m_activeChunks.end();)

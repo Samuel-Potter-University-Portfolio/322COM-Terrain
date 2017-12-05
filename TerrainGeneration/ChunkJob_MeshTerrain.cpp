@@ -52,18 +52,28 @@ static IsoPacket GetIsoData(const Chunk& chunk, const int32& x, const int32& y, 
 	uint32 count = 0;
 
 	// Calc densitiy base on whether it's a material or not
-	if (!Voxel::IsMaterial(outPacket.type))
-		return outPacket;
-
-
-	count = 1;
-	if (Voxel::IsMaterial(chunk.Get(x + 0, y + 0, z + 1))) ++count;
-	if (Voxel::IsMaterial(chunk.Get(x + 0, y + 0, z - 1))) ++count;
-	if (Voxel::IsMaterial(chunk.Get(x + 0, y + 1, z + 0))) ++count;
-	if (Voxel::IsMaterial(chunk.Get(x + 0, y - 1, z + 0))) ++count;
-	if (Voxel::IsMaterial(chunk.Get(x + 1, y + 0, z + 0))) ++count;
-	if (Voxel::IsMaterial(chunk.Get(x - 1, y + 0, z + 0))) ++count;
-	outPacket.level = (float)count / 6.0f;
+	if (!Voxel::IsMaterial(outPacket.type)) 
+	{
+		count = 1;
+		if (!Voxel::IsMaterial(chunk.Get(x + 0, y + 0, z + 1))) ++count;
+		if (!Voxel::IsMaterial(chunk.Get(x + 0, y + 0, z - 1))) ++count;
+		if (!Voxel::IsMaterial(chunk.Get(x + 0, y + 1, z + 0))) ++count;
+		if (!Voxel::IsMaterial(chunk.Get(x + 0, y - 1, z + 0))) ++count;
+		if (!Voxel::IsMaterial(chunk.Get(x + 1, y + 0, z + 0))) ++count;
+		if (!Voxel::IsMaterial(chunk.Get(x - 1, y + 0, z + 0))) ++count;
+		outPacket.level = (float)count / 6.0f;
+	}
+	else
+	{
+		count = 1;
+		if (Voxel::IsMaterial(chunk.Get(x + 0, y + 0, z + 1))) ++count;
+		if (Voxel::IsMaterial(chunk.Get(x + 0, y + 0, z - 1))) ++count;
+		if (Voxel::IsMaterial(chunk.Get(x + 0, y + 1, z + 0))) ++count;
+		if (Voxel::IsMaterial(chunk.Get(x + 0, y - 1, z + 0))) ++count;
+		if (Voxel::IsMaterial(chunk.Get(x + 1, y + 0, z + 0))) ++count;
+		if (Voxel::IsMaterial(chunk.Get(x - 1, y + 0, z + 0))) ++count;
+		outPacket.level = (float)count / 6.0f;
+	}
 
 	return outPacket;
 }
@@ -83,15 +93,15 @@ static void LerpVertex(const Chunk& chunk, ivec3 a, ivec3 b, vec3& outPosition, 
 	vec3 af = a;
 	vec3 bf = b;
 
-	if (ap.level < bp.level)
+	if (Voxel::IsMaterial(ap.type))
 	{
-		outPosition = bf + (af - bf) * (bp.level - ap.level) * smoothness;
-		outType = bp.type;
+		outPosition = af + (bf - af) * (0.5f + (ap.level - bp.level) * smoothness);
+		outType = ap.type;
 	}
 	else
 	{
-		outPosition = af + (bf - af) * (ap.level - bp.level) * smoothness;
-		outType = ap.type;
+		outPosition = bf + (af - bf) * (0.5f + (bp.level - ap.level) * smoothness);
+		outType = bp.type;
 	}
 }
 

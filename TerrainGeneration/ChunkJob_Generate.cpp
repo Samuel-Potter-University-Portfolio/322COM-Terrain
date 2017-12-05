@@ -21,18 +21,19 @@ void ChunkJob_Generate::Execute()
 	const float scale = 0.01f;
 
 	// TEST GEN TERRAIN
+	/*
 	for (uint32 x = 0; x < CHUNK_SIZE; ++x)
 			for (uint32 z = 0; z < CHUNK_SIZE; ++z)
 			{
 				const vec3 worldPos = offset + vec3(x, 0, z);
 				const float v = noise.GetOctave(worldPos.x*scale, 0, worldPos.z*scale, 6, 0.3f);
 
-				const uint32 h = v * CHUNK_HEIGHT;
-				for (uint32 y = 0; y <= h; ++y)
+				const int32 h = v * CHUNK_HEIGHT;
+				for (int32 y = 0; y <= h; ++y)
 					chunk.Set(x, y, z, y == h ? Voxel::Type::Grass : Voxel::Type::Dirt);
 			}
+			*/
 
-	/*
 	for (uint32 x = 0; x < CHUNK_SIZE; ++x)
 		for (uint32 y = 0; y < CHUNK_HEIGHT; ++y)
 			for (uint32 z = 0; z < CHUNK_SIZE; ++z)
@@ -44,7 +45,6 @@ void ChunkJob_Generate::Execute()
 				else
 					chunk.Set(x, y, z, Voxel::Type::Air);
 			}
-			*/
 
 	/*
 	for (uint32 x = 0; x < CHUNK_SIZE; ++x)
