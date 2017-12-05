@@ -9,7 +9,7 @@
 
 
 Chunk::Chunk(Terrain* terrain) :
-	m_terrain(terrain)
+	m_terrain(*terrain)
 {
 	m_terrainMesh = new Mesh;
 }
@@ -65,7 +65,7 @@ Voxel::Type Chunk::Get(const int32& x, const int32& y, const int32& z) const
 
 	// Out of bounds (width/depth) so check other chunks
 	if (x < 0 || x >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE)
-		return m_terrain->Get(x + m_chunkCoords.x * CHUNK_SIZE, y, z + m_chunkCoords.y * CHUNK_SIZE);
+		return m_terrain.Get(x + m_chunkCoords.x * CHUNK_SIZE, y, z + m_chunkCoords.y * CHUNK_SIZE);
 
 	return m_voxels[GetIndex(x, y, z)]; 
 }
@@ -76,20 +76,12 @@ IChunkJob* Chunk::GetQueuedJob()
 	IChunkJob* job = m_pendingJobQueue.front(); 
 	m_pendingJobQueue.pop(); 
 
-	m_activeJobs.emplace_back(job); 
+	m_activeJobs.push_back(job); 
 	return job;
 }
 void Chunk::OnJobCompletion(IChunkJob* job) 
 {
-	// Only erase job if can find it (Might be from a previous pool)
-	for (uint32 i = 0; i < m_activeJobs.size(); ++i)
-	{
-		if (m_activeJobs[i] == job)
-		{
-			m_activeJobs.erase(m_activeJobs.begin() + i);
-			return;
-		}
-	}
+	m_activeJobs.erase(std::remove(m_activeJobs.begin(), m_activeJobs.end(), job), m_activeJobs.end());
 }
 
 void Chunk::OnAdjacentChunkGenerate() 

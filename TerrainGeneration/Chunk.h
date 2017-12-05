@@ -5,6 +5,8 @@
 #include "Mesh.h"
 
 #include <queue>
+#include <list>
+#include <array>
 
 
 #define CHUNK_SIZE 16
@@ -47,8 +49,8 @@ private:
 	///
 	/// Terrain vars
 	///
-	Terrain* m_terrain;
-	Voxel::Type m_voxels[CHUNK_HEIGHT * CHUNK_SIZE * CHUNK_SIZE]{ Voxel::Type::Air };
+	Terrain& m_terrain;
+	std::array<Voxel::Type, CHUNK_HEIGHT * CHUNK_SIZE * CHUNK_SIZE> m_voxels{ Voxel::Type::Air };
 	ivec2 m_chunkCoords;
 
 	///
@@ -65,7 +67,7 @@ private:
 	/// Jobs
 	///
 	std::queue<IChunkJob*> m_pendingJobQueue; 
-	std::vector<IChunkJob*> m_activeJobs;
+	std::list<IChunkJob*> m_activeJobs;
 
 public:
 	Chunk(Terrain* terrain);
@@ -98,7 +100,14 @@ public:
 	* @param x,y,z			The local coordinates of the voxel to set
 	* @param type			The type this voxel should be
 	*/
-	inline void Set(const int32& x, const int32& y, const int32& z, const Voxel::Type& type) { m_voxels[GetIndex(x, y, z)] = type; }
+	inline void Set(const int32& x, const int32& y, const int32& z, const Voxel::Type& type) 
+	{
+#ifdef _DEBUG
+		if (!(x >= 0 && x < CHUNK_SIZE && y >= 0 && y < CHUNK_HEIGHT && z >= 0 && z < CHUNK_SIZE))
+			throw std::exception("Setting invalid voxel coordinate");
+#endif
+		m_voxels[GetIndex(x, y, z)] = type; 
+	}
 	/**
 	* Retreive a specific voxel from local coordinates
 	* -Note: Will read other chunks, if necessiary
@@ -129,7 +138,7 @@ protected:
 	/// Getters & Setters
 	///
 public:
-	inline Terrain* GetTerrain() const { return m_terrain; }
+	inline Terrain* GetTerrain() const { return &m_terrain; }
 
 	inline ivec2 GetCoords() const { return m_chunkCoords; }
 	inline Mesh* GetTerrainMesh() const { return m_terrainMesh; }

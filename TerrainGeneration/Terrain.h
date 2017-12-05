@@ -10,6 +10,8 @@
 #include <vector>
 #include <queue>
 
+#include <mutex>
+
 
 class Scene;
 
@@ -52,6 +54,9 @@ private:
 
 	/// Where to currently load from
 	ivec2 m_loadCentre;
+	/// Where we were last syncing from
+
+	ivec2 m_previousCentre;
 	/// How close does a chunk have to be to be considered to work on
 	int32 m_workRadius = 5;
 	/// Chunks in this radius will be created, if they don't already exist
@@ -65,6 +70,7 @@ private:
 	///
 	uint32 m_poolSize;
 	std::unordered_map<ivec2, Chunk*, ivec2_KeyFuncs> m_activeChunks;
+	std::mutex m_chunkAccessMutex;
 	std::queue<Chunk*> m_chunkPool;
 
 

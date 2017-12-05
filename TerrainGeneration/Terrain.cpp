@@ -34,6 +34,7 @@ Terrain::Terrain(Scene* scene) :
 
 	// Base pool size on unload range
 	m_poolSize = (m_unloadRadius * 2 + 1)*(m_unloadRadius * 2 + 1) + 40;
+	m_previousCentre = ivec2(-1000, -1000); // Force sync
 
 	LOG("Chunk Settings:");
 	LOG("\t-WORK_RADIUS:\t%i", m_workRadius);
@@ -241,6 +242,7 @@ void Terrain::RunWorker()
 				// Execute iteration
 				if ((-jobRange / 2 < x) && (x <= jobRange / 2) && (-jobRange / 2 < y) && (y <= jobRange / 2))
 				{
+					const std::lock_guard<std::mutex> lock(m_chunkAccessMutex);
 					auto it = m_activeChunks.find(m_loadCentre + ivec2(x, y));
 					if (it != m_activeChunks.end() && it->second->HasQueuedJob())
 					{
@@ -276,6 +278,7 @@ void Terrain::RunWorker()
 		catch (std::exception e)
 		{
 			LOG_ERROR("Exception caught in worker thread '%s'", e.what());
+			throw e;
 		}
 	}
 
@@ -309,41 +312,48 @@ void Terrain::UpdateScene(Window& window, const float& deltaTime)
 	vec3 loadCentre = m_parent->GetCamera().GetLocation();
 	ivec2 centre = GetChunkCoords(std::round(loadCentre.x), std::round(loadCentre.y), std::round(loadCentre.z));
 
-	// Print centre information
-	if (window.GetKeyboard().IsKeyReleased(Keyboard::Key::KV_C))
-		LOG("Load centre (%i, %i)", centre.x, centre.y);
 
-	// Unload any chunks which are outside of the area
-	for (auto it = m_activeChunks.begin(); it != m_activeChunks.end();)
+	if (centre != m_previousCentre)
 	{
-		const ivec2& coords = it->first;
-		if (std::abs(coords.x - centre.x) > m_unloadRadius || std::abs(coords.y - centre.y) > m_unloadRadius)
-		{
-			// TODO - Cleanup any active jobs
-			FreeChunk(it->second);
-			m_activeChunks.erase(it++);
-		}
-		else
-			++it;
-	}
+		const std::lock_guard<std::mutex> guard(m_chunkAccessMutex);
 
-	// Load any chunks which are in load area and aren't already loaded
-	for (int32 x = -m_loadRadius; x <= m_loadRadius; ++x)
-		for (int32 y = -m_loadRadius; y <= m_loadRadius; ++y)
+		// Print centre information
+		if (window.GetKeyboard().IsKeyReleased(Keyboard::Key::KV_C))
+			LOG("Load centre (%i, %i)", centre.x, centre.y);
+
+		// Unload any chunks which are outside of the area
+		for (auto it = m_activeChunks.begin(); it != m_activeChunks.end();)
 		{
-			ivec2 coords(centre.x + x, centre.y + y);
-			if (m_activeChunks.find(coords) == m_activeChunks.end())
+			const ivec2& coords = it->first;
+			if (std::abs(coords.x - centre.x) > m_unloadRadius || std::abs(coords.y - centre.y) > m_unloadRadius)
 			{
-				Chunk* chunk;
-				if (TryGetNewChunk(chunk, coords))
-					m_activeChunks[coords] = chunk;
-				else
-					LOG_WARNING("Cannot load new chunk (%i,%i) as pool is empty", coords.x, coords.y);
+				// TODO - Cleanup any active jobs
+				FreeChunk(it->second);
+				m_activeChunks.erase(it++);
 			}
+			else
+				++it;
 		}
 
-	// Update centre after all chunks are in
-	m_loadCentre = centre;
+		// Load any chunks which are in load area and aren't already loaded
+		for (int32 x = -m_loadRadius; x <= m_loadRadius; ++x)
+			for (int32 y = -m_loadRadius; y <= m_loadRadius; ++y)
+			{
+				ivec2 coords(centre.x + x, centre.y + y);
+				if (m_activeChunks.find(coords) == m_activeChunks.end())
+				{
+					Chunk* chunk;
+					if (TryGetNewChunk(chunk, coords))
+						m_activeChunks[coords] = chunk;
+					else
+						LOG_WARNING("Cannot load new chunk (%i,%i) as pool is empty", coords.x, coords.y);
+				}
+			}
+
+		// Update centre after all chunks are in
+		m_loadCentre = centre;
+		m_previousCentre = centre;
+	}
 
 	
 
@@ -408,6 +418,7 @@ void Terrain::NotifyChunkGeneration(const ivec2& coords)
 			if (x == 0 && y == 0)
 				continue;
 
+			std::lock_guard<std::mutex> guard(m_chunkAccessMutex);
 			auto it = m_activeChunks.find(ivec2(coords.x + x, coords.y + y));
 			if (it != m_activeChunks.end())
 				it->second->OnAdjacentChunkGenerate();
