@@ -17,10 +17,57 @@ void ChunkJob_Generate::Execute()
 
 
 	PerlinNoise noise;
-	noise.SetSeed(0);
-	const float scale = 0.01f;
+	noise.SetSeed(1234);
+	const float scale = 0.02f;
+	const float overhangScale = 0.06f;
 
 	// TEST GEN TERRAIN
+	for (uint32 x = 0; x < CHUNK_SIZE; ++x)
+		for (uint32 y = 0; y < CHUNK_HEIGHT; ++y)
+			for (uint32 z = 0; z < CHUNK_SIZE; ++z)
+			{
+				const vec3 worldPos = offset + vec3(x, y, z);
+				const float v = noise.GetOctave(worldPos.x*scale, worldPos.y*overhangScale, worldPos.z*scale, 4, 0.3f);
+
+				float limit = 0.0f;
+				if(y < 1)
+					limit = 1.0f;
+				else if (y < 60)
+				{
+					const float t = (float)(60 - y)/59.0f;
+					limit = t;
+				}
+				else
+					limit = 0.0f;
+
+
+				if (v <= limit)
+					chunk.Set(x, y, z, Voxel::Type::Stone);
+				else
+					chunk.Set(x, y, z, Voxel::Type::Air);
+			}
+
+	
+	// Place grass on surface
+	for (uint32 x = 0; x < CHUNK_SIZE; ++x)
+		for (uint32 z = 0; z < CHUNK_SIZE; ++z)
+		{
+			for (int32 y = CHUNK_HEIGHT - 1; y >= 0; --y)
+			{
+				if (chunk.Get(x, y, z) == Voxel::Type::Stone)
+				{
+					chunk.Set(x, y, z, Voxel::Type::Grass);
+
+					for (int32 dy = y - 1; dy >= y - 3; --dy)
+						chunk.Set(x, dy, z, Voxel::Type::Dirt);
+					break;
+				}
+			}
+		}
+		
+
+
+	/*
 	for (uint32 x = 0; x < CHUNK_SIZE; ++x)
 			for (uint32 z = 0; z < CHUNK_SIZE; ++z)
 			{

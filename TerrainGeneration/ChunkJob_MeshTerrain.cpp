@@ -10,7 +10,6 @@
 
 
 
-
 /**
 * The appropriate hashing functions which are needed to use vec3 as a key
 * https://stackoverflow.com/questions/9047612/glmivec2-as-key-in-unordered-map
@@ -28,6 +27,14 @@ struct vec3_KeyFuncs
 	}
 };
 
+inline static float clamp(const float& value, const float& min, const float& max)
+{
+	if (value < min)
+		return min;
+	else if (value > max)
+		return max;
+	return value;
+}
 
 
 /** Packet for passing around voxel density datas */
@@ -95,12 +102,12 @@ static void LerpVertex(const Chunk& chunk, ivec3 a, ivec3 b, vec3& outPosition, 
 
 	if (Voxel::IsMaterial(ap.type))
 	{
-		outPosition = af + (bf - af) * (0.5f + (ap.level - bp.level) * smoothness);
+		outPosition = af + (bf - af) * clamp(0.5f + (ap.level - bp.level) * smoothness, 0.0f, 1.0f);
 		outType = ap.type;
 	}
 	else
 	{
-		outPosition = bf + (af - bf) * (0.5f + (bp.level - ap.level) * smoothness);
+		outPosition = bf + (af - bf) * clamp(0.5f + (bp.level - ap.level) * smoothness, 0.0f, 1.0f);
 		outType = bp.type;
 	}
 }
@@ -145,6 +152,10 @@ void ChunkJob_MeshTerrain::Execute()
 				if (Voxel::IsMaterial(chunk.Get(x + 1, y + 1, z + 0))) caseIndex |= 32;
 				if (Voxel::IsMaterial(chunk.Get(x + 1, y + 1, z + 1))) caseIndex |= 64;
 				if (Voxel::IsMaterial(chunk.Get(x + 0, y + 1, z + 1))) caseIndex |= 128;
+
+				// Fully inside iso-surface
+				if (caseIndex == 0 || caseIndex == 255)
+					continue;
 
 
 				// Smooth edges based on density

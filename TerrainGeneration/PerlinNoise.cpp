@@ -73,9 +73,10 @@ inline float CosLerp(const float& a, const float& b, const float& t)
 float PerlinNoise::Get01(const float& x, const float& y, const float& z) 
 {
 	// Transfrom input based on seed
-	float tX = std::abs(x + m_seed * 11.0f);
-	float tY = std::abs(y + m_seed * 7.0f);
-	float tZ = std::abs(z + m_seed * 13.0f);
+	float tX = std::abs(x + 91.25f);
+	float tY = std::abs(y - 71.33f);
+	float tZ = std::abs(z + 110.73f);
+
 	// Get whole and fraction for xyz
 	int32 xW = (int32)tX & 255;
 	int32 yW = (int32)tY & 255;

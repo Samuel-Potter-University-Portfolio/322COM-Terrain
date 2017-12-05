@@ -1,4 +1,5 @@
 #include "Scene.h"
+#include "Logger.h"
 
 
 void Scene::Build() 
@@ -30,7 +31,11 @@ void Scene::UpdateScene(Window& window, const float& deltaTime)
 			float mouseSensitivity = 1.18f * 0.05f;
 
 			if (keyboard.IsKeyDown(Keyboard::Key::KV_LSHIFT))
-				m_cameraCurrentSpeed += deltaTime * 3.0f;
+			{
+				m_cameraCurrentSpeed += deltaTime * 5.0f;
+				if (m_cameraCurrentSpeed > 50.0f)
+					m_cameraCurrentSpeed = 50.0f;
+			}
 			else
 				m_cameraCurrentSpeed = baseMoveSpeed;
 

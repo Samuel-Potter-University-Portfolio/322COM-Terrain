@@ -204,8 +204,11 @@ void Terrain::RunWorker()
 	bWorkerRunning = true;
 	LOG("Launching Terrain worker thread");
 
+
 	while (bWorkerRunning)
 	{
+		const std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
+
 		try
 		{
 			ivec2 centre = m_loadCentre;
@@ -242,12 +245,22 @@ void Terrain::RunWorker()
 				// Execute iteration
 				if ((-jobRange / 2 < x) && (x <= jobRange / 2) && (-jobRange / 2 < y) && (y <= jobRange / 2))
 				{
-					const std::lock_guard<std::mutex> lock(m_chunkAccessMutex);
-					auto it = m_activeChunks.find(m_loadCentre + ivec2(x, y));
-					if (it != m_activeChunks.end() && it->second->HasQueuedJob())
-					{
-						IChunkJob* job = it->second->GetQueuedJob();
 
+					// Make sure search is done safely (Only lock mutex while iterating)
+					IChunkJob* job = nullptr;
+					if (m_chunkAccessMutex.try_lock())
+					{
+						auto it = m_activeChunks.find(m_loadCentre + ivec2(x, y));
+
+						if (it != m_activeChunks.end() && it->second->HasQueuedJob())
+							job = it->second->GetQueuedJob();
+
+						m_chunkAccessMutex.unlock();
+					}
+
+					// Execute job
+					if (job != nullptr)
+					{
 						// Only execute job, if it hasn't been aborted
 						if (!job->IsAborted())
 							job->Execute();
@@ -270,16 +283,21 @@ void Terrain::RunWorker()
 				x += dx;
 				y += dy;
 			}
-
-
-			// Update at 60 ticks a second
-			std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
 		}
 		catch (std::exception e)
 		{
 			LOG_ERROR("Exception caught in worker thread '%s'", e.what());
 			throw e;
 		}
+
+
+		const std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
+		const auto diff = std::chrono::time_point_cast<std::chrono::milliseconds>(end) - std::chrono::time_point_cast<std::chrono::milliseconds>(start);
+		const auto sleepTime = std::chrono::milliseconds(1000 / 60);
+
+		// Update at 60 ticks a second
+		if (diff < sleepTime)
+			std::this_thread::sleep_for(sleepTime - diff);
 	}
 
 	LOG("Terrain worker thread closed");
@@ -360,8 +378,8 @@ void Terrain::UpdateScene(Window& window, const float& deltaTime)
 
 	
 
-	// Complete any jobs that need it
-	while (m_completedJobQueue.size() != 0)
+	// Complete any jobs that need it (Only complete max of 10 per update)
+	for (uint32 i = 0; i < 10 && m_completedJobQueue.size() != 0; ++i)
 	{
 		IChunkJob* job = m_completedJobQueue.front();
 
@@ -421,7 +439,6 @@ void Terrain::NotifyChunkGeneration(const ivec2& coords)
 			if (x == 0 && y == 0)
 				continue;
 
-			std::lock_guard<std::mutex> guard(m_chunkAccessMutex);
 			auto it = m_activeChunks.find(ivec2(coords.x + x, coords.y + y));
 			if (it != m_activeChunks.end())
 				it->second->OnAdjacentChunkGenerate();
