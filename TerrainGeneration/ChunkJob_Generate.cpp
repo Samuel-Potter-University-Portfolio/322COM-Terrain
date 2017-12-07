@@ -16,8 +16,7 @@ void ChunkJob_Generate::Execute()
 	const vec3 offset(chunk.GetCoords().x * CHUNK_SIZE, 0, chunk.GetCoords().y * CHUNK_SIZE);
 
 
-	PerlinNoise noise;
-	noise.SetSeed(1234);
+	PerlinNoise noise(1234);
 	const float scale = 0.02f;
 	const float overhangScale = 0.06f;
 

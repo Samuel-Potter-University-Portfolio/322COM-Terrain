@@ -84,6 +84,9 @@
     <ClCompile Include="PerlinNoise.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ChunkJob_MeshTrees.cpp">
+      <Filter>Source Files\Terrain\Jobs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Logger.h">
@@ -142,6 +145,9 @@
     </ClInclude>
     <ClInclude Include="PerlinNoise.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ChunkJob_MeshTrees.h">
+      <Filter>Header Files\Terrain\Jobs</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,6 +1,9 @@
 #pragma once
 #include "Common.h"
 
+#include <vector>
+#include <ctime>
+
 
 /**
 * A container to hold any perlin noise information
@@ -11,9 +14,12 @@ private:
 	///
 	/// Noise vars
 	///
-	uint32 m_seed = 0;
+	const uint32 m_seed = 0;
+	std::vector<uint8> m_permutationTable;
 
 public:
+	PerlinNoise(const uint32 seed = time(nullptr));
+
 	/**
 	* Calculate a 3D normalized perlin noise value for this coordinate
 	* @param x,y,z				Coordinates to perform lookup for
@@ -45,12 +51,14 @@ public:
 	*/
 	float GetOctave(const float& x, const float& y, const uint32& octaves, const float& persistence);
 
+private:
+	/** Get permutation at this index */
+	inline uint8 GetPermutation(const uint32& i) { return m_permutationTable[i % m_permutationTable.size()]; }
 
 	///
 	/// Getters & Setters
 	///
 public:
-	inline void SetSeed(const uint32& value) { m_seed = value; }
 	inline uint32 GetSeed() const { return m_seed; }
 };
 

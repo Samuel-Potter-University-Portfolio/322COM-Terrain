@@ -333,7 +333,10 @@ void Terrain::UpdateScene(Window& window, const float& deltaTime)
 
 	// Print centre information
 	if (window.GetKeyboard().IsKeyReleased(Keyboard::Key::KV_C))
+	{
 		LOG("Load centre (%i, %i)", centre.x, centre.y);
+		LOG("Loaded chunks (%i)", m_activeChunks.size());
+	}
 
 
 	// Only update if centre has changed
