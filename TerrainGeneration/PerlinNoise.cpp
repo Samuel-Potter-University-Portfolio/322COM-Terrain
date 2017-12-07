@@ -116,7 +116,40 @@ float PerlinNoise::Get01(const float& x, const float& y, const float& z)
 	return (CosLerp(vY0, vY1, w) + 1.0f) * 0.5f;
 }
 
-float PerlinNoise::GetOctave(const float& x, const float& y, const float& z, const uint32& octaves, const float& persistence) 
+float PerlinNoise::Get01(const float& x, const float& y) 
+{
+	// Transfrom input based on seed
+	float tX = std::abs(x + 91.25f);
+	float tY = std::abs(y - 71.33f);
+
+	// Get whole and fraction for xyz
+	int32 xW = (int32)tX & 255;
+	int32 yW = (int32)tY & 255;
+	float xF = tX - (int32)tX;
+	float yF = tY - (int32)tY;
+
+
+	// Get values to use for interpolation
+	float u = FadeValue(xF);
+	float v = FadeValue(yF);
+
+
+	/// Get values at each cell
+	uint8 v00 = g_perlinPermutations[g_perlinPermutations[xW + 0] + yW + 0];
+	uint8 v01 = g_perlinPermutations[g_perlinPermutations[xW + 0] + yW + 1];
+	uint8 v10 = g_perlinPermutations[g_perlinPermutations[xW + 1] + yW + 0];
+	uint8 v11 = g_perlinPermutations[g_perlinPermutations[xW + 1] + yW + 1];
+
+
+	// Get interpolated values along each axiss
+	const float vX0 = CosLerp(CalculateGradient(v00, xF - 0, yF - 0, 0), CalculateGradient(v10, xF - 1, yF - 0, 0), u);
+	const float vX1 = CosLerp(CalculateGradient(v01, xF - 0, yF - 1, 0), CalculateGradient(v11, xF - 1, yF - 1, 0), u);
+	
+	// Clamp final value between 0-1
+	return (CosLerp(vX0, vX1, v) + 1.0f) * 0.5f;
+}
+
+float PerlinNoise::GetOctave(const float& x, const float& y, const float& z, const uint32& octaves, const float& persistence)
 {
 	float frequency = 1.0f;
 	float amplitude = 1.0f;
@@ -127,6 +160,27 @@ float PerlinNoise::GetOctave(const float& x, const float& y, const float& z, con
 	for (uint32 i = 0; i < octaves; ++i)
 	{
 		value += Get01(x * frequency, y * frequency, z* frequency) * amplitude;
+
+		// Decay values with each iteration
+		maximum += amplitude;
+		amplitude *= persistence;
+		frequency *= 2.0f;
+	}
+
+	return value / maximum;
+}
+
+float PerlinNoise::GetOctave(const float& x, const float& y, const uint32& octaves, const float& persistence)
+{
+	float frequency = 1.0f;
+	float amplitude = 1.0f;
+
+	float value = 0.0f;
+	float maximum = 0.0f;
+
+	for (uint32 i = 0; i < octaves; ++i)
+	{
+		value += Get01(x * frequency, y * frequency) * amplitude;
 
 		// Decay values with each iteration
 		maximum += amplitude;
