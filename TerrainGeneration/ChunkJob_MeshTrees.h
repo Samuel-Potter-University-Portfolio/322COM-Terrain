@@ -3,7 +3,6 @@
 #include "IChunkJob.h"
 
 #include <vector>
-#include <unordered_map>
 
 
 
@@ -36,6 +35,7 @@ public:
 private:
 	/**
 	* Add a tree to mesh data at this offset
+	* @param offset			Offset from this 
 	*/
 	void AddTree(const vec3& offset);
 };

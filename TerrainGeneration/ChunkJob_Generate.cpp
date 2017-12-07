@@ -6,6 +6,7 @@
 #include "PerlinNoise.h"
 
 
+
 ChunkJob_Generate::ChunkJob_Generate(Chunk* parent) : IChunkJob(parent)
 {
 }
@@ -47,7 +48,7 @@ void ChunkJob_Generate::Execute()
 			}
 
 	
-	// Place grass on surface
+	// Place grass on a surface
 	for (uint32 x = 0; x < CHUNK_SIZE; ++x)
 		for (uint32 z = 0; z < CHUNK_SIZE; ++z)
 		{

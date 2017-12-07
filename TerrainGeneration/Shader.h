@@ -51,6 +51,19 @@ public:
 	bool LoadFragmentShaderFromMemory(const string& code);
 
 	/**
+	* Adds a vertex shader unit to this shader from source code
+	* @param code		The glsl source code for the shader
+	* @returns If succesful or not
+	*/
+	bool LoadVertexShaderFromFile(const string& file);
+	/**
+	* Adds a fragment shader unit to this shader from source code
+	* @param code		The glsl source code for the shader
+	* @returns If succesful or not
+	*/
+	bool LoadFragmentShaderFromFile(const string& file);
+
+	/**
 	* Attempt to link all subshaders and store them in a program
 	* @returns If succesful or not
 	*/

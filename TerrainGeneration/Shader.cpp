@@ -2,6 +2,7 @@
 #include "Logger.h"
 
 #include <GL\glew.h>
+#include <fstream>
 
 
 Shader::Shader()
@@ -98,6 +99,32 @@ bool Shader::LoadFragmentShaderFromMemory(const string& code)
 	}
 
 	return true;
+}
+
+bool Shader::LoadVertexShaderFromFile(const string& file) 
+{
+	std::ifstream stream(file);
+	if (stream.is_open())
+	{
+		std::string str((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
+		return LoadVertexShaderFromMemory(str);
+	}
+
+	LOG_ERROR("Cannot find vertex shader file '%s'", file.c_str());
+	return false;
+}
+
+bool Shader::LoadFragmentShaderFromFile(const string& file) 
+{
+	std::ifstream stream(file);
+	if (stream.is_open())
+	{
+		std::string str((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
+		return LoadFragmentShaderFromMemory(str);
+	}
+
+	LOG_ERROR("Cannot find fragment shader file '%s'", file.c_str());
+	return false;
 }
 
 bool Shader::LinkShader() 

@@ -31,6 +31,9 @@
     <Filter Include="Source Files\Terrain\Jobs">
       <UniqueIdentifier>{82533b6f-9195-44fb-8c5b-35151289a0a8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Shaders">
+      <UniqueIdentifier>{c383b5f8-0881-4142-962a-0fd35bad0b35}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -149,5 +152,13 @@
     <ClInclude Include="ChunkJob_MeshTrees.h">
       <Filter>Header Files\Terrain\Jobs</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Resources\Shader\terrain.frag.glsl">
+      <Filter>Header Files\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Shader\terrain.vert.glsl">
+      <Filter>Header Files\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
