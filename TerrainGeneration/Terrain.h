@@ -3,11 +3,11 @@
 #include "Window.h"
 
 #include "Chunk.h"
+#include "TerrainMaterial.h"
 
 #include <thread>
 
 #include <unordered_map>
-#include <vector>
 #include <queue>
 
 #include <mutex>
@@ -55,8 +55,8 @@ private:
 	/// Where to currently load from
 	ivec2 m_loadCentre;
 	/// Where we were last syncing from
-
 	ivec2 m_previousCentre;
+
 	/// How close does a chunk have to be to be considered to work on
 	int32 m_workRadius = 5;
 	/// Chunks in this radius will be created, if they don't already exist
@@ -72,6 +72,12 @@ private:
 	std::unordered_map<ivec2, Chunk*, ivec2_KeyFuncs> m_activeChunks;
 	std::mutex m_chunkAccessMutex;
 	std::queue<Chunk*> m_chunkPool;
+
+	
+	///
+	/// Drawing / Visuals
+	///
+	TerrainMaterial m_terrainMaterial;
 
 
 public:

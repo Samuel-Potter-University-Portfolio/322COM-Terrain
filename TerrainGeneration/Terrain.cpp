@@ -3,19 +3,7 @@
 #include "Scene.h"
 
 #include <chrono>
-
-
-#include "Shader.h"
-#include "Texture.h"
-#include "Material.h"
 #include "Transform.h"
-
-Texture* testTexture0;
-Texture* testTexture1;
-Texture* testTexture2;
-Texture* testTexture3;
-Shader* testShader;
-SceneMaterial* testMaterial;
 
 
 
@@ -49,25 +37,6 @@ Terrain::Terrain(Scene* scene) :
 	for (uint32 i = 0; i < m_poolSize; ++i)
 		m_chunkPool.emplace(new Chunk(this));
 	LOG("Built chunk pool of size %i", m_poolSize);
-
-
-	testShader = new Shader;
-	testShader->LoadVertexShaderFromFile("Resources\\Shaders\\terrain.vert.glsl");
-	testShader->LoadFragmentShaderFromFile("Resources\\Shaders\\terrain.frag.glsl");
-	testShader->LinkShader();
-
-
-	testMaterial = new SceneMaterial;
-	testMaterial->OverrideShader(testShader);
-
-	testTexture0 = new Texture;
-	testTexture0->LoadFromFile("Resources\\grass.png");
-	testTexture1 = new Texture;
-	testTexture1->LoadFromFile("Resources\\dirt.jpg");
-	testTexture2 = new Texture;
-	testTexture2->LoadFromFile("Resources\\sand.png");
-	testTexture3 = new Texture;
-	testTexture3->LoadFromFile("Resources\\stone.jpg");
 }
 
 Terrain::~Terrain()
@@ -90,15 +59,6 @@ Terrain::~Terrain()
 		m_chunkPool.pop();
 		delete chunk;
 	}
-
-
-
-	delete testMaterial;
-	delete testShader;
-	delete testTexture0;
-	delete testTexture1;
-	delete testTexture2;
-	delete testTexture3;
 }
 
 void Terrain::RunWorker() 
@@ -302,24 +262,15 @@ void Terrain::UpdateScene(Window& window, const float& deltaTime)
 
 void Terrain::RenderTerrain(Window& window, const float& deltaTime) 
 {
-	testMaterial->Bind(window, *m_parent);
+	m_terrainMaterial.Bind(window, *m_parent);
 
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, testTexture0->GetID());
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, testTexture1->GetID());
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, testTexture2->GetID());
-	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, testTexture3->GetID());
 
 	for (auto it : m_activeChunks)
 	{
 		if (it.second->IsTerrainMeshBuilt())
 		{
-			testMaterial->PrepareMesh(*it.second->GetTerrainMesh());
-			testMaterial->RenderInstance(Transform());
+			m_terrainMaterial.PrepareMesh(*it.second->GetTerrainMesh());
+			m_terrainMaterial.RenderInstance(Transform());
 		}
 	}
 }

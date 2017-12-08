@@ -90,6 +90,9 @@
     <ClCompile Include="ChunkJob_MeshTrees.cpp">
       <Filter>Source Files\Terrain\Jobs</Filter>
     </ClCompile>
+    <ClCompile Include="TerrainMaterial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Logger.h">
@@ -152,12 +155,15 @@
     <ClInclude Include="ChunkJob_MeshTrees.h">
       <Filter>Header Files\Terrain\Jobs</Filter>
     </ClInclude>
+    <ClInclude Include="TerrainMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Resources\Shader\terrain.frag.glsl">
+    <None Include="..\Resources\Shaders\terrain.frag.glsl">
       <Filter>Header Files\Shaders</Filter>
     </None>
-    <None Include="..\Resources\Shader\terrain.vert.glsl">
+    <None Include="..\Resources\Shaders\terrain.vert.glsl">
       <Filter>Header Files\Shaders</Filter>
     </None>
   </ItemGroup>

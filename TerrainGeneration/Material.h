@@ -77,12 +77,4 @@ public:
 	* @param transform			The transform data to use during render
 	*/
 	virtual void RenderInstance(class Transform& transform);
-
-
-	///
-	/// Getters & Setters
-	///
-public:
-	/// Override the shader this material uses with this shader
-	virtual void OverrideShader(Shader* shader);
 };
