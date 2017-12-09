@@ -82,7 +82,7 @@ void Terrain::RunWorker()
 			int32 dx = 0;
 			int32 dy = -1;
 
-			const int32 jobRange = m_workRadius * 2 + 1;
+			const int32 jobRange = (centre != m_loadCentre) ? 2 : m_workRadius * 2 + 1; // Do small range for when centre changes
 			const uint32 max = jobRange*jobRange;
 
 			// Loop in spiral
@@ -107,31 +107,35 @@ void Terrain::RunWorker()
 				// Execute iteration
 				if ((-jobRange / 2 < x) && (x <= jobRange / 2) && (-jobRange / 2 < y) && (y <= jobRange / 2))
 				{
-
 					// Make sure search is done safely (Only lock mutex while iterating)
-					IChunkJob* job = nullptr;
+					Chunk* chunk = nullptr;
 					if (m_chunkAccessMutex.try_lock())
 					{
 						auto it = m_activeChunks.find(m_loadCentre + ivec2(x, y));
 
 						if (it != m_activeChunks.end() && it->second->HasQueuedJob())
-							job = it->second->GetQueuedJob();
+							chunk = it->second;
 
 						m_chunkAccessMutex.unlock();
 					}
 
-					// Execute job
-					if (job != nullptr)
+					// Look for jobs to execute
+					if (chunk != nullptr)
 					{
-						// Only execute job, if it hasn't been aborted
-						if (!job->IsAborted())
-							job->Execute();
+						if (chunk->HasQueuedJob())
+						{
+							IChunkJob* job = chunk->GetQueuedJob();
 
-						// Job may have aborted during execution
-						if (!job->IsAborted())
-							m_completedJobQueue.emplace(job);
-						else
-							delete job;
+							// Only execute job, if it hasn't been aborted
+							if (!job->IsAborted())
+								job->Execute();
+
+							// Job may have aborted during execution
+							if (!job->IsAborted())
+								m_completedJobQueue.emplace(job);
+							else
+								delete job;
+						}
 					}
 				}
 

@@ -11,9 +11,9 @@ TerrainMaterial::TerrainMaterial()
 	m_shader->LinkShader();
 
 	m_grassTexture.LoadFromFile("Resources\\grass.png");
-	m_dirtTexture.LoadFromFile("Resources\\dirt.jpg");
+	m_dirtTexture.LoadFromFile("Resources\\dirt.png");
 	m_sandTexture.LoadFromFile("Resources\\sand.png");
-	m_stoneTexture.LoadFromFile("Resources\\stone.jpg");
+	m_stoneTexture.LoadFromFile("Resources\\stone.png");
 }
 
 TerrainMaterial::~TerrainMaterial() 
