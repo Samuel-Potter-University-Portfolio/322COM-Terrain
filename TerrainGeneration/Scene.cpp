@@ -66,4 +66,5 @@ void Scene::RenderScene(Window& window, const float& deltaTime)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	m_terrain->RenderTerrain(window, deltaTime);
+	m_terrain->RenderTrees(window, deltaTime);
 }

@@ -12,6 +12,7 @@ Chunk::Chunk(Terrain* terrain) :
 	m_terrain(*terrain)
 {
 	m_terrainMesh = new Mesh;
+	m_treeMesh = new Mesh;
 }
 Chunk::~Chunk()
 {

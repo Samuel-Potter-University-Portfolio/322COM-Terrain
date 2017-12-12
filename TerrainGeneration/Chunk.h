@@ -57,11 +57,14 @@ private:
 	/// Rendering/Generating vars
 	///
 	Mesh* m_terrainMesh = nullptr;
+	Mesh* m_treeMesh = nullptr;
 
 	friend class ChunkJob_Generate;
 	friend class ChunkJob_MeshTerrain;
+	friend class ChunkJob_MeshTrees;
 	bool bAreVoxelsGenerated = false;
 	bool bIsTerrainMeshBuilt = false;
+	bool bIsTreeMeshBuilt = false;
 
 	///
 	/// Jobs
@@ -142,8 +145,10 @@ public:
 
 	inline ivec2 GetCoords() const { return m_chunkCoords; }
 	inline Mesh* GetTerrainMesh() const { return m_terrainMesh; }
+	inline Mesh* GetTreeMesh() const { return m_treeMesh; }
 
 	inline bool HasVoxelsGenerated() const { return bAreVoxelsGenerated; }
 	inline bool IsTerrainMeshBuilt() const { return bIsTerrainMeshBuilt; }
+	inline bool IsTreeMeshBuilt() const { return bIsTreeMeshBuilt; }
 };
 

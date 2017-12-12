@@ -11,8 +11,8 @@ Terrain::Terrain(Scene* scene) :
 	m_parent(scene)
 {
 #ifdef _DEBUG
-	m_workRadius = 5;
-	m_loadRadius = 4;
+	m_workRadius = 1;
+	m_loadRadius = 2;
 	m_unloadRadius = 7;
 #else
 	m_workRadius = 8;
@@ -278,6 +278,22 @@ void Terrain::RenderTerrain(Window& window, const float& deltaTime)
 		}
 	}
 }
+
+void Terrain::RenderTrees(Window& window, const float& deltaTime) 
+{
+	m_treeMaterial.Bind(window, *m_parent);
+
+
+	for (auto it : m_activeChunks)
+	{
+		if (it.second->IsTreeMeshBuilt())
+		{
+			m_terrainMaterial.PrepareMesh(*it.second->GetTreeMesh());
+			m_terrainMaterial.RenderInstance(Transform());
+		}
+	}
+}
+
 
 Voxel::Type Terrain::Get(const int32& x, const int32& y, const int32& z) const 
 {

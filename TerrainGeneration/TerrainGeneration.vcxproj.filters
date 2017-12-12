@@ -90,8 +90,11 @@
     <ClCompile Include="ChunkJob_MeshTrees.cpp">
       <Filter>Source Files\Terrain\Jobs</Filter>
     </ClCompile>
+    <ClCompile Include="DefaultMaterial.cpp">
+      <Filter>Source Files\GL</Filter>
+    </ClCompile>
     <ClCompile Include="TerrainMaterial.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Terrain</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -155,8 +158,11 @@
     <ClInclude Include="ChunkJob_MeshTrees.h">
       <Filter>Header Files\Terrain\Jobs</Filter>
     </ClInclude>
+    <ClInclude Include="DefaultMaterial.h">
+      <Filter>Header Files\GL</Filter>
+    </ClInclude>
     <ClInclude Include="TerrainMaterial.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Terrain</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -3,6 +3,7 @@
 #include "Window.h"
 
 #include "Chunk.h"
+#include "DefaultMaterial.h"
 #include "TerrainMaterial.h"
 
 #include <thread>
@@ -78,6 +79,7 @@ private:
 	/// Drawing / Visuals
 	///
 	TerrainMaterial m_terrainMaterial;
+	DefaultMaterial m_treeMaterial;
 
 
 public:
@@ -98,10 +100,16 @@ public:
 	* @param deltaTime			Time (In seconds) since last update/render
 	*/
 	void RenderTerrain(Window& window, const float& deltaTime);
-
-	//void RenderTrees(Window& window, const float& deltaTime);
+	/**
+	* Callback when the trees should be rendered
+	* @param window				The window to render to
+	* @param deltaTime			Time (In seconds) since last update/render
+	*/
+	void RenderTrees(Window& window, const float& deltaTime);
 
 	//void RenderWater(Window& window, const float& deltaTime);
+
+	//void RenderClouds(Window& window, const float& deltaTime);
 
 
 	/**

@@ -3,6 +3,7 @@
 #include "Terrain.h"
 
 #include "ChunkJob_MeshTerrain.h"
+#include "ChunkJob_MeshTrees.h"
 #include "PerlinNoise.h"
 
 
@@ -133,4 +134,5 @@ void ChunkJob_Generate::OnComplete()
 
 	// Build meshes
 	chunk.QueueJob(new ChunkJob_MeshTerrain(&chunk));
+	chunk.QueueJob(new ChunkJob_MeshTrees(&chunk));
 }
