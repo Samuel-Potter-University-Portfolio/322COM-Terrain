@@ -21,7 +21,7 @@ private:
 	std::vector<vec3> m_vertices;
 	std::vector<vec3> m_normals;
 	std::vector<vec2> m_uvs;
-	std::vector<vec2> m_swayWeights; // Encoded in uv channel 1
+	std::vector<vec2> m_extraData0; // Encoded in uv channel 1 contains: texture type and sway weights
 
 
 public:

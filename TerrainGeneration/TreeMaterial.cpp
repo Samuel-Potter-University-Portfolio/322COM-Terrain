@@ -11,7 +11,7 @@ TreeMaterial::TreeMaterial()
 	m_shader->LinkShader();
 
 	m_barkTexture.LoadFromFile("Resources\\tree_bark.png");
-	//m_leavesTexture.LoadFromFile("Resources\\dirt.png");
+	m_leavesTexture.LoadFromFile("Resources\\leaves.png");
 }
 
 TreeMaterial::~TreeMaterial()
@@ -25,6 +25,6 @@ void TreeMaterial::Bind(class Window& window, class Scene& scene)
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_barkTexture.GetID());
-	//glActiveTexture(GL_TEXTURE1);
-	//glBindTexture(GL_TEXTURE_2D, m_leavesTexture.GetID());
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, m_leavesTexture.GetID());
 }

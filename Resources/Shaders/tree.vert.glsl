@@ -13,10 +13,14 @@ uniform mat4 ViewToClip;
 layout (location = 0) in vec3 inPos;
 layout (location = 1) in vec3 inNormal;
 layout (location = 3) in vec2 inUVs;
+layout (location = 4) in vec2 inExtraData;
 
 out vec3 passPos;
 out vec3 passNormal;
 out vec2 passUVs;
+
+out flat int textureType;
+out float swayWeight;
 
 
 void main()
@@ -27,4 +31,7 @@ void main()
 	passPos = worldLocation.xyz;
 	passNormal = inNormal;
 	passUVs = inUVs;
+	
+	textureType = int(inExtraData.x);
+	swayWeight = inExtraData.y;
 }
