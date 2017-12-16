@@ -19,110 +19,150 @@ void ChunkJob_Generate::Execute()
 
 
 	const PerlinNoise* noise = chunk.GetNoiseGenerator();
+	const float biomeScale = 0.005f;
+
 	const float scale = 0.02f;
-	const float overhangScale = 0.06f;
+	const float overhangScale = 0.01f;
 
-	// TEST GEN TERRAIN
+	/// Biome info
+	const float oceanEnd = 0.4f;
+	const float woodsStart = 0.45f;
+
+	const float beachHeight = 20;
+	const uint32 waterHeight = 11;
+
+
+	// Generate basic 2D height map
 	for (uint32 x = 0; x < CHUNK_SIZE; ++x)
-		for (uint32 y = 0; y < CHUNK_HEIGHT; ++y)
-			for (uint32 z = 0; z < CHUNK_SIZE; ++z)
+		for (uint32 z = 0; z < CHUNK_SIZE; ++z)
+		{
+			const vec3 worldPos2D = offset + vec3(x, 0, z);
+			const float biomeValue = noise->GetOctave(worldPos2D.x*biomeScale, worldPos2D.z*biomeScale, 2, 0.8f);
+
+			const float value = noise->GetOctave(worldPos2D.x*scale, worldPos2D.z*scale, 4, 0.3f);
+
+
+			// Is in beach/ocean
+			if (biomeValue <= oceanEnd)
 			{
-				const vec3 worldPos = offset + vec3(x, y, z);
-				const float v = noise->GetOctave(worldPos.x*scale, worldPos.y*overhangScale, worldPos.z*scale, 4, 0.3f);
+				const uint32 height = value * beachHeight;
 
-				float limit = 0.0f;
-				if(y < 1)
-					limit = 1.0f;
-				else if (y < 60)
-				{
-					const float t = (float)(60 - y)/59.0f;
-					limit = t;
-				}
-				else
-					limit = 0.0f;
-
-
-				if (v <= limit)
-					chunk.Set(x, y, z, Voxel::Type::Stone);
-				else
-					chunk.Set(x, y, z, Voxel::Type::Air);
+				for (uint32 y = 0; y < height; y++)
+					chunk.Set(x, y, z, Voxel::Type::Sand);
 			}
 
+
+			// In biome transition
+			else if(biomeValue > oceanEnd && biomeValue < woodsStart)
+			{
+				// Normalize value for this region
+				const float n = (biomeValue - oceanEnd) / (woodsStart - oceanEnd);
+
+				// LERP between expected values for both biomes
+				const float beachH = beachHeight + value * (CHUNK_HEIGHT - beachHeight);
+				const float woodsH = value * beachHeight;
+
+				const uint32 height = beachH * (n) + woodsH * (1.0f - n);
+
+				for (uint32 y = 0; y < height; y++)
+				{
+					// Set to beach
+					if (n < 0.3f)
+						chunk.Set(x, y, z, Voxel::Type::Sand);
+
+					// Set to woods
+					else
+					{
+						const vec3 worldPos3D = offset + vec3(x, y, z);
+						const float overhangValue = noise->GetOctave(worldPos3D.x*overhangScale, worldPos3D.y*overhangScale, worldPos3D.z*overhangScale, 4, 0.8f);
+
+
+						float overhangThreshold = 0.0f;
+						if (y < beachHeight)
+							overhangThreshold = 1.0f;
+						else
+							overhangThreshold = 1.0f - glm::min((float)(y - beachHeight) / 20.0f, 1.0f) * 0.5f;
+
+						if (overhangValue <= overhangThreshold)
+							chunk.Set(x, y, z, Voxel::Type::Stone);
+					}
+				}
+			}
+
+
+			// Is in woodlands
+			else
+			{
+				const uint32 height = beachHeight + value * (CHUNK_HEIGHT - beachHeight);
+
+				for (uint32 y = 0; y < height; y++)
+				{
+					const vec3 worldPos3D = offset + vec3(x, y, z);
+					const float overhangValue = noise->GetOctave(worldPos3D.x*overhangScale, worldPos3D.y*overhangScale, worldPos3D.z*overhangScale, 4, 0.8f);
+
+
+					float overhangThreshold = 0.0f;
+					if (y < beachHeight)
+						overhangThreshold = 1.0f;
+					else
+						overhangThreshold = 1.0f - glm::min((float)(y - beachHeight) / 20.0f, 1.0f) * 0.5f;
+
+					if(overhangValue <= overhangThreshold)
+						chunk.Set(x, y, z, Voxel::Type::Stone);
+				}
+			}
+			
+
+			// Place sand at bottom
+			chunk.Set(x, 0, z, Voxel::Type::Sand);
+		}
+
 	
-	// Place grass on a surface
+	// Place grass on top of the surface
 	for (uint32 x = 0; x < CHUNK_SIZE; ++x)
 		for (uint32 z = 0; z < CHUNK_SIZE; ++z)
 		{
 			for (int32 y = CHUNK_HEIGHT - 1; y >= 0; --y)
 			{
-				if (chunk.Get(x, y, z) == Voxel::Type::Stone)
-				{
-					chunk.Set(x, y, z, Voxel::Type::Grass);
+				Voxel::Type type = chunk.Get(x, y, z);
 
-					for (int32 dy = y - 1; dy >= y - 3; --dy)
-						chunk.Set(x, dy, z, Voxel::Type::Dirt);
+				if (type != Voxel::Type::Air)
+				{
+					if (type == Voxel::Type::Stone)
+					{
+						chunk.Set(x, y, z, Voxel::Type::Grass);
+
+						for (int32 dy = y - 1; dy >= y - 3 && dy >= 0; --dy)
+							chunk.Set(x, dy, z, Voxel::Type::Dirt);
+					}
 					break;
 				}
 			}
 		}
-		
 
 
-	/*
-	for (uint32 x = 0; x < CHUNK_SIZE; ++x)
-			for (uint32 z = 0; z < CHUNK_SIZE; ++z)
-			{
-				const vec3 worldPos = offset + vec3(x, 0, z);
-				const float v = noise.GetOctave(worldPos.x*scale, 0, worldPos.z*scale, 6, 0.3f);
-
-				int32 h = v * CHUNK_HEIGHT;
-				h = h > CHUNK_HEIGHT - 1 ? CHUNK_HEIGHT - 1 : h;
-				for (int32 y = 0; y <= h; ++y)
-					chunk.Set(x, y, z, y == h ? Voxel::Type::Grass : Voxel::Type::Dirt);
-			}
-	/*
-	for (uint32 x = 0; x < CHUNK_SIZE; ++x)
-		for (uint32 y = 0; y < CHUNK_HEIGHT; ++y)
-			for (uint32 z = 0; z < CHUNK_SIZE; ++z)
-			{
-				const vec3 worldPos = offset + vec3(x, y, z);
-				const float v = noise.GetOctave(worldPos.x*scale, worldPos.y*scale, worldPos.z*scale, 1, 0.5f);
-				if(v <= 0.5f)
-					chunk.Set(x, y, z, Voxel::Type::Stone);
-				else
-					chunk.Set(x, y, z, Voxel::Type::Air);
-			}
-			*/
-
-	/*
+	// Place water on top of sand
 	for (uint32 x = 0; x < CHUNK_SIZE; ++x)
 		for (uint32 z = 0; z < CHUNK_SIZE; ++z)
 		{
-			uint32 maxHeight = (std::cos((float)x / CHUNK_SIZE * 3.141592f * 2.0f) + 1.0f) * 0.1f * CHUNK_SIZE;
-			
-			for (uint32 y = 1; y < maxHeight + 1; ++y)
-				chunk.Set(x, y, z, Voxel::Type::Grass);
+			for (int32 y = CHUNK_HEIGHT - 1; y >= 0; --y)
+			{
+				Voxel::Type type = chunk.Get(x, y, z);
+
+				if (type != Voxel::Type::Air)
+				{
+					if (type == Voxel::Type::Sand)
+					{
+						// Place water
+						for (int32 cy = 0; cy <= waterHeight; ++cy)
+							if (chunk.Get(x, cy, z) == Voxel::Type::Air)
+								chunk.Set(x, cy, z, Voxel::Type::Dirt); // TODO - REPLACE WITH WATER
+					}
+					break;
+				}
+			}
 		}
 
-	chunk.Set(4, 1, 4, Voxel::Type::Sand);
-	chunk.Set(5, 1, 4, Voxel::Type::Sand);
-	chunk.Set(6, 1, 4, Voxel::Type::Stone);
-	chunk.Set(4, 1, 5, Voxel::Type::Stone);
-	chunk.Set(5, 1, 5, Voxel::Type::Sand);
-	chunk.Set(6, 1, 5, Voxel::Type::Sand);
-	chunk.Set(4, 1, 6, Voxel::Type::Stone);
-	chunk.Set(5, 1, 6, Voxel::Type::Stone);
-	chunk.Set(6, 1, 6, Voxel::Type::Sand);
-
-	chunk.Set(5, 5, 5, Voxel::Type::Stone);
-	chunk.Set(5, 4, 5, Voxel::Type::Sand);
-	chunk.Set(5, 5, 6, Voxel::Type::Sand);
-	chunk.Set(5, 4, 6, Voxel::Type::Stone);
-	chunk.Set(6, 5, 5, Voxel::Type::Sand);
-	chunk.Set(6, 4, 5, Voxel::Type::Stone);
-	chunk.Set(6, 5, 6, Voxel::Type::Sand);
-	chunk.Set(4, 4, 6, Voxel::Type::Stone);
-	*/
 }
 
 void ChunkJob_Generate::OnComplete() 
