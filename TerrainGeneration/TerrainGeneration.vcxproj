@@ -139,6 +139,7 @@
     <ClCompile Include="ChunkJob_Generate.cpp" />
     <ClCompile Include="ChunkJob_MeshTerrain.cpp" />
     <ClCompile Include="ChunkJob_MeshTrees.cpp" />
+    <ClCompile Include="ChunkJob_MeshWater.cpp" />
     <ClCompile Include="DefaultMaterial.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Logger.cpp" />
@@ -162,6 +163,7 @@
     <ClInclude Include="ChunkJob_Generate.h" />
     <ClInclude Include="ChunkJob_MeshTerrain.h" />
     <ClInclude Include="ChunkJob_MeshTrees.h" />
+    <ClInclude Include="ChunkJob_MeshWater.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="DefaultMaterial.h" />
     <ClInclude Include="IChunkJob.h" />

@@ -4,6 +4,7 @@
 
 #include "ChunkJob_MeshTerrain.h"
 #include "ChunkJob_MeshTrees.h"
+#include "ChunkJob_MeshWater.h"
 #include "PerlinNoise.h"
 
 
@@ -29,7 +30,7 @@ void ChunkJob_Generate::Execute()
 	const float woodsStart = 0.45f;
 
 	const float beachHeight = 20;
-	const uint32 waterHeight = 11;
+	const uint32 waterHeight = 12;
 
 
 	// Generate basic 2D height map
@@ -156,7 +157,7 @@ void ChunkJob_Generate::Execute()
 						// Place water
 						for (int32 cy = 0; cy <= waterHeight; ++cy)
 							if (chunk.Get(x, cy, z) == Voxel::Type::Air)
-								chunk.Set(x, cy, z, Voxel::Type::Dirt); // TODO - REPLACE WITH WATER
+								chunk.Set(x, cy, z, Voxel::Type::Water);
 					}
 					break;
 				}
@@ -175,4 +176,5 @@ void ChunkJob_Generate::OnComplete()
 	// Build meshes
 	chunk.QueueJob(new ChunkJob_MeshTerrain(&chunk));
 	chunk.QueueJob(new ChunkJob_MeshTrees(&chunk));
+	chunk.QueueJob(new ChunkJob_MeshWater(&chunk));
 }

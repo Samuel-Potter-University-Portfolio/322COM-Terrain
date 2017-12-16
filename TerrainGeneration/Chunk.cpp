@@ -14,6 +14,7 @@ Chunk::Chunk(Terrain* terrain) :
 {
 	m_terrainMesh = new Mesh;
 	m_treeMesh = new Mesh;
+	m_waterMesh = new Mesh;
 }
 Chunk::~Chunk()
 {
@@ -26,6 +27,7 @@ Chunk::~Chunk()
 
 	delete m_terrainMesh;
 	delete m_treeMesh;
+	delete m_waterMesh;
 }
 
 void Chunk::Alloc(const ivec2& coord) 
@@ -36,6 +38,7 @@ void Chunk::Alloc(const ivec2& coord)
 	bAreVoxelsGenerated = false;
 	bIsTerrainMeshBuilt = false;
 	bIsTreeMeshBuilt = false;
+	bIsWaterMeshBuilt = false;
 
 
 	// Try to generate terrain and features

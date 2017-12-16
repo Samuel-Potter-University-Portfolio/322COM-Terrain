@@ -296,6 +296,21 @@ void Terrain::RenderTrees(Window& window, const float& deltaTime)
 	}
 }
 
+void Terrain::RenderWater(Window& window, const float& deltaTime)
+{
+	m_waterMaterial.Bind(window, *m_parent);
+
+
+	for (auto it : m_activeChunks)
+	{
+		if (it.second->IsWaterMeshBuilt())
+		{
+			m_terrainMaterial.PrepareMesh(*it.second->GetWaterMesh());
+			m_terrainMaterial.RenderInstance(Transform());
+		}
+	}
+}
+
 
 Voxel::Type Terrain::Get(const int32& x, const int32& y, const int32& z) const 
 {

@@ -99,6 +99,9 @@
     <ClCompile Include="TreeMaterial.cpp">
       <Filter>Source Files\Terrain</Filter>
     </ClCompile>
+    <ClCompile Include="ChunkJob_MeshWater.cpp">
+      <Filter>Source Files\Terrain\Jobs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Logger.h">
@@ -169,6 +172,9 @@
     </ClInclude>
     <ClInclude Include="TreeMaterial.h">
       <Filter>Header Files\Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="ChunkJob_MeshWater.h">
+      <Filter>Header Files\Terrain\Jobs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

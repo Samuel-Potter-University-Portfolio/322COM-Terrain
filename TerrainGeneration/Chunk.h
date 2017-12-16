@@ -58,13 +58,16 @@ private:
 	///
 	Mesh* m_terrainMesh = nullptr;
 	Mesh* m_treeMesh = nullptr;
+	Mesh* m_waterMesh = nullptr;
 
 	friend class ChunkJob_Generate;
 	friend class ChunkJob_MeshTerrain;
 	friend class ChunkJob_MeshTrees;
+	friend class ChunkJob_MeshWater;
 	bool bAreVoxelsGenerated = false;
 	bool bIsTerrainMeshBuilt = false;
 	bool bIsTreeMeshBuilt = false;
+	bool bIsWaterMeshBuilt = false;
 
 	///
 	/// Jobs
@@ -147,9 +150,11 @@ public:
 	inline ivec2 GetCoords() const { return m_chunkCoords; }
 	inline Mesh* GetTerrainMesh() const { return m_terrainMesh; }
 	inline Mesh* GetTreeMesh() const { return m_treeMesh; }
+	inline Mesh* GetWaterMesh() const { return m_waterMesh; }
 
 	inline bool HasVoxelsGenerated() const { return bAreVoxelsGenerated; }
 	inline bool IsTerrainMeshBuilt() const { return bIsTerrainMeshBuilt; }
 	inline bool IsTreeMeshBuilt() const { return bIsTreeMeshBuilt; }
+	inline bool IsWaterMeshBuilt() const { return bIsWaterMeshBuilt; }
 };
 

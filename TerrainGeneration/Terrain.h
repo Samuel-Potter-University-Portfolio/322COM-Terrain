@@ -84,6 +84,7 @@ private:
 	PerlinNoise m_noiseGenerator;
 	TerrainMaterial m_terrainMaterial;
 	TreeMaterial m_treeMaterial;
+	DefaultMaterial m_waterMaterial;
 
 
 public:
@@ -110,8 +111,12 @@ public:
 	* @param deltaTime			Time (In seconds) since last update/render
 	*/
 	void RenderTrees(Window& window, const float& deltaTime);
-
-	//void RenderWater(Window& window, const float& deltaTime);
+	/**
+	* Callback when the water should be rendered
+	* @param window				The window to render to
+	* @param deltaTime			Time (In seconds) since last update/render
+	*/
+	void RenderWater(Window& window, const float& deltaTime);
 
 	//void RenderClouds(Window& window, const float& deltaTime);
 

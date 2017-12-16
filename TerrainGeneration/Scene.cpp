@@ -67,4 +67,5 @@ void Scene::RenderScene(Window& window, const float& deltaTime)
 
 	m_terrain->RenderTerrain(window, deltaTime);
 	m_terrain->RenderTrees(window, deltaTime);
+	m_terrain->RenderWater(window, deltaTime);
 }
