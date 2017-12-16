@@ -1,4 +1,5 @@
 #include "Chunk.h"
+#include "Terrain.h"
 #include "Logger.h"
 
 #include <algorithm>
@@ -24,6 +25,7 @@ Chunk::~Chunk()
 	}
 
 	delete m_terrainMesh;
+	delete m_treeMesh;
 }
 
 void Chunk::Alloc(const ivec2& coord) 
@@ -33,6 +35,7 @@ void Chunk::Alloc(const ivec2& coord)
 
 	bAreVoxelsGenerated = false;
 	bIsTerrainMeshBuilt = false;
+	bIsTreeMeshBuilt = false;
 
 
 	// Try to generate terrain and features
@@ -94,4 +97,9 @@ void Chunk::OnAdjacentChunkGenerate()
 	// Rebuild mesh as this one may be out of date
 	if(bIsTerrainMeshBuilt)
 		QueueJob(new ChunkJob_MeshTerrain(this));
+}
+
+const PerlinNoise* Chunk::GetNoiseGenerator() const
+{
+	return m_terrain.GetNoiseGenerator();
 }

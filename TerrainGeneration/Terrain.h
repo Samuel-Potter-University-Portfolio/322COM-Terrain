@@ -2,6 +2,8 @@
 #include "Common.h"
 #include "Window.h"
 
+#include "PerlinNoise.h"
+
 #include "Chunk.h"
 #include "DefaultMaterial.h"
 #include "TerrainMaterial.h"
@@ -76,14 +78,15 @@ private:
 
 	
 	///
-	/// Drawing / Visuals
+	/// Drawing, Visuals & Generation
 	///
+	PerlinNoise m_noiseGenerator;
 	TerrainMaterial m_terrainMaterial;
 	DefaultMaterial m_treeMaterial;
 
 
 public:
-	Terrain(Scene* scene);
+	Terrain(Scene* scene, const uint32& seed = time(nullptr));
 	~Terrain();
 
 
@@ -163,5 +166,12 @@ private:
 private:
 	/** Called by the worker thread (Launches into loop) */
 	void RunWorker();
+
+
+	///
+	/// Getters & Setters
+	///
+public:
+	inline const PerlinNoise* GetNoiseGenerator() const { return &m_noiseGenerator; }
 };
 

@@ -7,8 +7,9 @@
 
 
 
-Terrain::Terrain(Scene* scene) :
-	m_parent(scene)
+Terrain::Terrain(Scene* scene, const uint32& seed) :
+	m_parent(scene),
+	m_noiseGenerator(seed)
 {
 #ifdef _DEBUG
 	m_workRadius = 1;
@@ -24,6 +25,7 @@ Terrain::Terrain(Scene* scene) :
 	m_poolSize = (m_unloadRadius * 2 + 1)*(m_unloadRadius * 2 + 1) + 40;
 	m_previousCentre = ivec2(-1000, -1000); // Force sync
 
+	LOG("Using seed: %i", seed);
 	LOG("Chunk Settings:");
 	LOG("\t-WORK_RADIUS:\t%i", m_workRadius);
 	LOG("\t-LOAD_RADIUS:\t%i", m_loadRadius);

@@ -18,7 +18,7 @@ void ChunkJob_Generate::Execute()
 	const vec3 offset(chunk.GetCoords().x * CHUNK_SIZE, 0, chunk.GetCoords().y * CHUNK_SIZE);
 
 
-	PerlinNoise noise(1234);
+	const PerlinNoise* noise = chunk.GetNoiseGenerator();
 	const float scale = 0.02f;
 	const float overhangScale = 0.06f;
 
@@ -28,7 +28,7 @@ void ChunkJob_Generate::Execute()
 			for (uint32 z = 0; z < CHUNK_SIZE; ++z)
 			{
 				const vec3 worldPos = offset + vec3(x, y, z);
-				const float v = noise.GetOctave(worldPos.x*scale, worldPos.y*overhangScale, worldPos.z*scale, 4, 0.3f);
+				const float v = noise->GetOctave(worldPos.x*scale, worldPos.y*overhangScale, worldPos.z*scale, 4, 0.3f);
 
 				float limit = 0.0f;
 				if(y < 1)

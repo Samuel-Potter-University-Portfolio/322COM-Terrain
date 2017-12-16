@@ -142,6 +142,7 @@ protected:
 	///
 public:
 	inline Terrain* GetTerrain() const { return &m_terrain; }
+	const class PerlinNoise* GetNoiseGenerator() const;
 
 	inline ivec2 GetCoords() const { return m_chunkCoords; }
 	inline Mesh* GetTerrainMesh() const { return m_terrainMesh; }

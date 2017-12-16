@@ -12,6 +12,8 @@
 class ChunkJob_MeshTrees : public IChunkJob
 {
 private:
+	friend struct TreeBranch;
+
 	///
 	/// Temp mesh vars
 	///

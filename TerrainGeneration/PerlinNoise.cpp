@@ -87,7 +87,7 @@ PerlinNoise::PerlinNoise(const uint32 seed) : m_seed(seed)
 	}
 }
 
-float PerlinNoise::Get01(const float& x, const float& y, const float& z) 
+float PerlinNoise::Get01(const float& x, const float& y, const float& z) const
 {
 	// Transfrom input based on seed
 	float tX = std::abs(x + 91.25f);
@@ -133,7 +133,7 @@ float PerlinNoise::Get01(const float& x, const float& y, const float& z)
 	return (CosLerp(vY0, vY1, w) + 1.0f) * 0.5f;
 }
 
-float PerlinNoise::Get01(const float& x, const float& y) 
+float PerlinNoise::Get01(const float& x, const float& y) const
 {
 	// Transfrom input based on seed
 	float tX = std::abs(x + 91.25f);
@@ -165,7 +165,7 @@ float PerlinNoise::Get01(const float& x, const float& y)
 	return (CosLerp(vX0, vX1, v) + 1.0f) * 0.5f;
 }
 
-float PerlinNoise::GetOctave(const float& x, const float& y, const float& z, const uint32& octaves, const float& persistence)
+float PerlinNoise::GetOctave(const float& x, const float& y, const float& z, const uint32& octaves, const float& persistence) const
 {
 	float frequency = 1.0f;
 	float amplitude = 1.0f;
@@ -186,7 +186,7 @@ float PerlinNoise::GetOctave(const float& x, const float& y, const float& z, con
 	return value / maximum;
 }
 
-float PerlinNoise::GetOctave(const float& x, const float& y, const uint32& octaves, const float& persistence)
+float PerlinNoise::GetOctave(const float& x, const float& y, const uint32& octaves, const float& persistence) const
 {
 	float frequency = 1.0f;
 	float amplitude = 1.0f;
