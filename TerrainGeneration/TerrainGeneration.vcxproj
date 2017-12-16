@@ -153,6 +153,7 @@
     <ClCompile Include="TerrainMaterial.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Transform.cpp" />
+    <ClCompile Include="TreeMaterial.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -177,11 +178,14 @@
     <ClInclude Include="TerrainMaterial.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Transform.h" />
+    <ClInclude Include="TreeMaterial.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Resources\Shaders\terrain.frag.glsl" />
     <None Include="..\Resources\Shaders\terrain.vert.glsl" />
+    <None Include="..\Resources\Shaders\tree.frag.glsl" />
+    <None Include="..\Resources\Shaders\tree.vert.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

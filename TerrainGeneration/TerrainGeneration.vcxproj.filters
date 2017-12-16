@@ -96,6 +96,9 @@
     <ClCompile Include="TerrainMaterial.cpp">
       <Filter>Source Files\Terrain</Filter>
     </ClCompile>
+    <ClCompile Include="TreeMaterial.cpp">
+      <Filter>Source Files\Terrain</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Logger.h">
@@ -164,12 +167,21 @@
     <ClInclude Include="TerrainMaterial.h">
       <Filter>Header Files\Terrain</Filter>
     </ClInclude>
+    <ClInclude Include="TreeMaterial.h">
+      <Filter>Header Files\Terrain</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Resources\Shaders\terrain.frag.glsl">
       <Filter>Header Files\Shaders</Filter>
     </None>
     <None Include="..\Resources\Shaders\terrain.vert.glsl">
+      <Filter>Header Files\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Shaders\tree.frag.glsl">
+      <Filter>Header Files\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Shaders\tree.vert.glsl">
       <Filter>Header Files\Shaders</Filter>
     </None>
   </ItemGroup>

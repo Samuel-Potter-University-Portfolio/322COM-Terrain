@@ -96,20 +96,21 @@ public:
 
 				target.m_vertices.emplace_back(m_location + P);
 				target.m_normals.emplace_back(P);
+				target.m_uvs.emplace_back(vec2((float)i / (float)segments * m_width, 0.0f));
 			}
 
 			// No triangles need to be added in this step (Next steps will add)
 		}
 
 		// Generate recurisively using branches
-		GenerateBranchMeshData(startIndex, target);
+		GenerateBranchMeshData(startIndex, 0.0f, target);
 	}
 
 public:
 	/**
 	* Generate the mesh for this tree, by treating this branch as just another branch
 	*/
-	void GenerateBranchMeshData(const uint32& previousCircle, ChunkJob_MeshTrees& target)
+	void GenerateBranchMeshData(const uint32& previousCircle, const float& totalLength, ChunkJob_MeshTrees& target)
 	{
 		const vec3 direction = glm::rotateY(glm::rotateX(vec3(0, 1, 0), m_angle.x), m_angle.y);
 		const vec3 circleOffset = m_location + direction * m_length;
@@ -124,10 +125,11 @@ public:
 		{
 			const uint32 index = target.m_vertices.size();
 			const vec3 P = vec3(cosf(deltaAngle * (i + 0)), 0, sinf(deltaAngle * (i + 0))) * m_width * 0.5f;
-			const vec3 rP = glm::rotateX(P, m_angle.x);
+			const vec3 rP = glm::rotateX(P, -m_angle.x);
 
-			target.m_vertices.emplace_back(circleOffset + rP);
-			target.m_normals.emplace_back(rP);
+			target.m_vertices.emplace_back(circleOffset + P);
+			target.m_normals.emplace_back(P);
+			target.m_uvs.emplace_back(vec2((float)i / (float)segments * m_width, totalLength + m_length));
 		}
 
 		// Create tris
@@ -146,7 +148,7 @@ public:
 		// Create sub branches
 		for(TreeBranch* branch : m_subBranches)
 			if (branch != nullptr)
-				branch->GenerateBranchMeshData(startIndex, target);
+				branch->GenerateBranchMeshData(startIndex, totalLength + m_length, target);
 	}
 };
 
@@ -187,6 +189,7 @@ void ChunkJob_MeshTrees::OnComplete()
 	Mesh* mesh = GetOwningChunk().GetTreeMesh();
 	mesh->SetVertices(m_vertices);
 	mesh->SetNormals(m_normals);
+	mesh->SetUVs(m_uvs);
 	mesh->SetTriangles(m_triangles);
 	GetOwningChunk().bIsTreeMeshBuilt = true;
 }

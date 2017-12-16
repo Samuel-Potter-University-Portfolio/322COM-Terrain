@@ -7,6 +7,7 @@
 #include "Chunk.h"
 #include "DefaultMaterial.h"
 #include "TerrainMaterial.h"
+#include "TreeMaterial.h"
 
 #include <thread>
 
@@ -82,7 +83,7 @@ private:
 	///
 	PerlinNoise m_noiseGenerator;
 	TerrainMaterial m_terrainMaterial;
-	DefaultMaterial m_treeMaterial;
+	TreeMaterial m_treeMaterial;
 
 
 public:
