@@ -13,7 +13,7 @@
 struct TreeBranch
 {
 private:
-	TreeBranch* m_subBranches[4]{ nullptr };
+	TreeBranch* m_subBranches[3]{ nullptr };
 	uint32 m_subBranchCount;
 
 	const vec3 m_location;
@@ -28,19 +28,21 @@ public:
 		m_length(length), m_width(width)
 	{
 		m_subBranchCount = 0;
+		uint32 i = 0;
 
 		if (width != 0.0f)
 		{
 			// Generate sub branches by decaying current settings and adding variation
 			for (TreeBranch*& branch : m_subBranches)
 			{
+				i++;
 				const vec3 direction = glm::rotateY(glm::rotateX(vec3(0, 1, 0), angle.x), angle.y);
 				const vec3 subLocation = location + direction * length;
 
 				const float noiseScale = 1.0f;
-				const float v0 = noise->Get01(subLocation.x * noiseScale + m_subBranchCount, (subLocation.y + m_subBranchCount) * noiseScale, subLocation.z * noiseScale + m_subBranchCount);
-				const float v1 = noise->Get01(subLocation.y * noiseScale + m_subBranchCount, (subLocation.z + m_subBranchCount) * noiseScale, subLocation.x * noiseScale + m_subBranchCount);
-				const float v2 = noise->Get01(subLocation.x * noiseScale + m_subBranchCount, (subLocation.z + m_subBranchCount) * noiseScale, subLocation.x * noiseScale + m_subBranchCount);
+				const float v0 = noise->Get01(subLocation.x * noiseScale + i, (subLocation.y + i) * noiseScale, subLocation.z * noiseScale + i);
+				const float v1 = noise->Get01(subLocation.y * noiseScale + i, (subLocation.z + i) * noiseScale, subLocation.x * noiseScale + i);
+				const float v2 = noise->Get01(subLocation.x * noiseScale + i, (subLocation.z + i) * noiseScale, subLocation.x * noiseScale + i);
 				if (m_subBranchCount != 0 && v1 < 0.33f)
 					continue;
 
@@ -53,10 +55,10 @@ public:
 					subWidth = 0.0f;
 
 
-				const float branchDeltaAngle = 3.141592f * 2.0f / 4.0f;
+				const float branchDeltaAngle = 3.141592f * 2.0f / 3.0f;
 				const vec2 subAngle(
-					angle.x + glm::radians(-30.0f + 20.0f * v2),
-					angle.y + branchDeltaAngle * m_subBranchCount + glm::radians(-100.0f + 50.0f * v1)
+					glm::clamp(angle.x + glm::radians(-30.0f + 35.0f * v2), glm::radians(-88.0f), glm::radians(88.0f)),
+					angle.y + branchDeltaAngle * i + glm::radians(-100.0f + 50.0f * v1)
 				);
 
 
@@ -155,7 +157,29 @@ ChunkJob_MeshTrees::ChunkJob_MeshTrees(Chunk* parent) : IChunkJob(parent)
 
 void ChunkJob_MeshTrees::Execute() 
 {
-	AddTree(vec3(0, 35, 0));
+	const Chunk& chunk = GetOwningChunk();
+	const PerlinNoise* noise = chunk.GetNoiseGenerator();
+
+	// Attempt to generate trees on grass
+	for (uint32 x = 0; x < CHUNK_SIZE; ++x)
+		for (uint32 z = 0; z < CHUNK_SIZE; ++z)
+			for (uint32 y = CHUNK_HEIGHT - 1; y > 0; --y)
+			{
+				Voxel::Type type = chunk.Get(x, y, z);
+				if (type == Voxel::Type::Air)
+					continue;
+
+				// Attempt to generate tree on grass
+				if (type == Voxel::Type::Grass)
+				{
+					const float v = noise->Get01(x * 0.9f, y * 0.9f, z * 0.9f);
+					if (v <= 0.2f)
+						AddTree(vec3(x, y, z));
+				}
+
+				// Don't continue, as found top voxel
+				break;
+			}
 }
 
 void ChunkJob_MeshTrees::OnComplete() 
@@ -171,7 +195,14 @@ void ChunkJob_MeshTrees::AddTree(const vec3& offset)
 {
 	const Chunk& chunk = GetOwningChunk();
 	const vec3 totalOffset = vec3(CHUNK_SIZE * chunk.GetCoords().x, 0, CHUNK_SIZE * chunk.GetCoords().y) + offset;
+	const PerlinNoise* noise = chunk.GetNoiseGenerator();
 	
-	TreeBranch tree(chunk.GetNoiseGenerator(), totalOffset, vec2(0,0), 4.0f, 1.0f, 0.95f, 0.3f);
+	const float v = noise->Get01(totalOffset.x, totalOffset.y, totalOffset.z);
+	TreeBranch tree(noise, totalOffset, vec2(0,0), 
+		1.0f + v * 4.0f, // Start Length
+		0.5f + v * 2.0f, // Start width
+		0.95f,	// Length decay factor
+		0.3f	// Width decay rate
+	);
 	tree.GenerateTreeMeshData(*this);
 }
