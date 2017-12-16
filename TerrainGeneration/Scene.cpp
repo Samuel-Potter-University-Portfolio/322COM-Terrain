@@ -4,7 +4,7 @@
 
 void Scene::Build() 
 {
-	m_terrain = new Terrain(this);
+	m_terrain = new Terrain(this, 1234);
 	m_camera.SetLocation(vec3(0, CHUNK_HEIGHT, 0));
 }
 
