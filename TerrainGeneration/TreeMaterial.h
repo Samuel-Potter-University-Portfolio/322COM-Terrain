@@ -11,6 +11,11 @@ class TreeMaterial : public SceneMaterial
 {
 private:
 	///
+	/// Cached uniforms
+	///
+	uint32 m_uniformClockTime;
+
+	///
 	/// Material vars
 	///
 	Texture m_barkTexture;

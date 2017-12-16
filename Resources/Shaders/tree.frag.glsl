@@ -5,7 +5,6 @@ in vec3 passNormal;
 in vec2 passUVs;
 
 in flat int textureType;
-in float swayWeight;
 
 
 out vec4 outColour;

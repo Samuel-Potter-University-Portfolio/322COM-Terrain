@@ -1,6 +1,7 @@
 #include "TreeMaterial.h"
 
 #include "GL\glew.h"
+#include "GLFW\glfw3.h"
 
 
 TreeMaterial::TreeMaterial()
@@ -12,6 +13,8 @@ TreeMaterial::TreeMaterial()
 
 	m_barkTexture.LoadFromFile("Resources\\tree_bark.png");
 	m_leavesTexture.LoadFromFile("Resources\\leaves.png");
+
+	m_uniformClockTime = m_shader->GetUniform("clockTime");
 }
 
 TreeMaterial::~TreeMaterial()
@@ -27,4 +30,7 @@ void TreeMaterial::Bind(class Window& window, class Scene& scene)
 	glBindTexture(GL_TEXTURE_2D, m_barkTexture.GetID());
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, m_leavesTexture.GetID());
+
+	const float time = glfwGetTime();
+	m_shader->SetUniformFloat(m_uniformClockTime, time);
 }

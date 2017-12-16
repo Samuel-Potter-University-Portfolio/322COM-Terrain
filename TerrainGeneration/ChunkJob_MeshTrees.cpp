@@ -149,8 +149,8 @@ public:
 			target.m_normals.emplace_back(P);
 			target.m_uvs.emplace_back(vec2((float)i / (float)segments * m_width, totalLength + m_length));
 			target.m_extraData0.emplace_back(vec2(
-				0,		// Texture type
-				0		// Sway weight
+				0,										// Texture type
+				glm::max(1.0f - m_width * 0.5f, 0.0f)	// Sway weight
 				));
 		}
 
