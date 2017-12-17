@@ -105,6 +105,9 @@
     <ClCompile Include="WaterMaterial.cpp">
       <Filter>Source Files\Terrain</Filter>
     </ClCompile>
+    <ClCompile Include="SkyMaterial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Logger.h">
@@ -182,6 +185,9 @@
     <ClInclude Include="WaterMaterial.h">
       <Filter>Header Files\Terrain</Filter>
     </ClInclude>
+    <ClInclude Include="SkyMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Resources\Shaders\terrain.frag.glsl">
@@ -200,6 +206,12 @@
       <Filter>Header Files\Shaders</Filter>
     </None>
     <None Include="..\Resources\Shaders\water.vert.glsl">
+      <Filter>Header Files\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Shaders\sky.vert.glsl">
+      <Filter>Header Files\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Shaders\sky.frag.glsl">
       <Filter>Header Files\Shaders</Filter>
     </None>
   </ItemGroup>

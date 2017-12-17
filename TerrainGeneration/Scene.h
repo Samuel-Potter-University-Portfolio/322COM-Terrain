@@ -5,6 +5,7 @@
 #include "Camera.h"
 
 #include "Terrain.h"
+#include "SkyMaterial.h"
 
 
 /**
@@ -20,6 +21,12 @@ private:
 	Camera m_camera;
 	float m_cameraCurrentSpeed;
 	Terrain* m_terrain = nullptr;
+
+	///
+	/// Skybox
+	///
+	Mesh*			m_skyMesh;
+	SkyMaterial*	m_skyMaterial;
 
 
 public:

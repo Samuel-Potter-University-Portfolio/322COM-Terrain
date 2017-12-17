@@ -150,6 +150,7 @@
     <ClCompile Include="PerlinNoise.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="SkyMaterial.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="TerrainMaterial.cpp" />
     <ClCompile Include="Texture.cpp" />
@@ -177,6 +178,7 @@
     <ClInclude Include="PerlinNoise.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="SkyMaterial.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="TerrainMaterial.h" />
     <ClInclude Include="Texture.h" />
@@ -186,6 +188,8 @@
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Resources\Shaders\sky.frag.glsl" />
+    <None Include="..\Resources\Shaders\sky.vert.glsl" />
     <None Include="..\Resources\Shaders\terrain.frag.glsl" />
     <None Include="..\Resources\Shaders\terrain.vert.glsl" />
     <None Include="..\Resources\Shaders\tree.frag.glsl" />

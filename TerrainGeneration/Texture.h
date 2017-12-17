@@ -42,6 +42,13 @@ public:
 	* @returns If succesful or not
 	*/
 	bool LoadFromFile(const string& file);
+
+	/**
+	* Attempt to load a cubemap from files
+	* @param <side>file		The path to the file to load from
+	* @returns If succesful or not
+	*/
+	bool LoadCubemapFromFiles(const string& frontFile, const string& backFile, const string& leftFile, const string& rightFile, const string& topFile, const string& bottomFile);
 	
 
 

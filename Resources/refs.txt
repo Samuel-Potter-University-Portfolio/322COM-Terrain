@@ -11,3 +11,6 @@ https://opengameart.org/content/leafy-treeplant-branch
 
 Water bump map:
 https://opengameart.org/content/water-caustics-effect-small
+
+Sky:
+https://93i.de/p/free-skybox-texture-set/
