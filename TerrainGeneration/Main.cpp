@@ -22,6 +22,15 @@ int main(void)
 		return -1;
 	}
 
+	LOG("Controls:");
+	LOG("\tWS: \t\tForward/Back");
+	LOG("\tAD: \t\tLeft/Right");
+	LOG("\tSpace: \t\tUp");
+	LOG("\tLCtrl: \t\tDown");
+	LOG("\tMouse: \t\tLook");
+	LOG("\tLMB: \t\tGrab mouse");
+	LOG("\tLShift: \tSpeed up (Sprint)");
+
 	Scene* scene = new Scene;
 	scene->Build();
 	window.LaunchMainLoop(std::bind(&Scene::UpdateCallback, scene, std::placeholders::_1, std::placeholders::_2));
