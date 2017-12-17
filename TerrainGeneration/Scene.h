@@ -6,6 +6,7 @@
 
 #include "Terrain.h"
 #include "SkyMaterial.h"
+#include "CloudMaterial.h"
 
 
 /**
@@ -26,7 +27,9 @@ private:
 	/// Skybox
 	///
 	Mesh*			m_skyMesh;
+	Mesh*			m_cloudMesh;
 	SkyMaterial*	m_skyMaterial;
+	CloudMaterial*	m_cloudMaterial;
 
 
 public:

@@ -9,7 +9,9 @@ void Scene::Build()
 
 	m_camera.SetFarPlane(2000.0f);
 	m_skyMesh = new Mesh;
+	m_cloudMesh = new Mesh;
 	m_skyMaterial = new SkyMaterial;
+	m_cloudMaterial = new CloudMaterial(m_terrain->GetNoiseGenerator());
 
 	// Generate sky mesh
 	m_skyMesh->SetVertices(std::vector<vec3>(
@@ -35,13 +37,28 @@ void Scene::Build()
 		0,4,2, 2,4,6,
 
 	}));
+
+	// Generate Cloud mesh
+	m_cloudMesh->SetVertices(std::vector<vec3>(
+	{
+		vec3(-1.0f, 0, -1.0f) * 1000.0f,
+		vec3(1.0f, 0, -1.0f) * 1000.0f,
+		vec3(-1.0f, 0, 1.0f) * 1000.0f,
+		vec3(1.0f, 0, 1.0f) * 1000.0f,
+	}));
+	m_cloudMesh->SetTriangles(std::vector<uint32>(
+	{
+		0,1,2, 2,1,3,
+	}));
 }
 
 void Scene::Destroy() 
 {
 	delete m_terrain;
 	delete m_skyMesh;
+	delete m_cloudMesh;
 	delete m_skyMaterial;
+	delete m_cloudMaterial;
 }
 
 
@@ -101,8 +118,33 @@ void Scene::RenderScene(Window& window, const float& deltaTime)
 	m_skyMaterial->Bind(window, *this);
 	m_skyMaterial->PrepareMesh(*m_skyMesh);
 	m_skyMaterial->RenderInstance(Transform());
-
+	
 	m_terrain->RenderTerrain(window, deltaTime);
 	m_terrain->RenderTrees(window, deltaTime);
 	m_terrain->RenderWater(window, deltaTime);
+
+	// Draw clouds
+	m_cloudMaterial->Bind(window, *this);
+	m_cloudMaterial->PrepareMesh(*m_cloudMesh);
+
+	// Render clouds in layered order (To resolve transparency corrected)
+	Transform bottom;
+	bottom.SetLocation(vec3(0, 100, 0));
+	Transform mid;
+	mid.SetLocation(vec3(0, 120, 0));
+	Transform top;
+	top.SetLocation(vec3(0, 140, 0));
+
+	// Draw view from below
+	m_cloudMaterial->RenderInstance(top);
+	m_cloudMaterial->RenderInstance(mid);
+	m_cloudMaterial->RenderInstance(bottom);
+
+	// Draw view from above
+	bottom.SetEularRotation(vec3(180, 0, 0));
+	mid.SetEularRotation(vec3(180, 0, 0));
+	top.SetEularRotation(vec3(180, 0, 0));
+	m_cloudMaterial->RenderInstance(bottom);
+	m_cloudMaterial->RenderInstance(mid);
+	m_cloudMaterial->RenderInstance(top);
 }

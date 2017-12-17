@@ -60,5 +60,8 @@ private:
 	///
 public:
 	inline uint32 GetSeed() const { return m_seed; }
+
+	inline const uint8* GetTableData() const { return m_permutationTable.data(); }
+	inline uint32 GetTableSize() const { return m_permutationTable.size(); }
 };
 

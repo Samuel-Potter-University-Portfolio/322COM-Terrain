@@ -108,6 +108,9 @@
     <ClCompile Include="SkyMaterial.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CloudMaterial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Logger.h">
@@ -191,6 +194,9 @@
     <ClInclude Include="LeveledMesh.h">
       <Filter>Header Files\GL</Filter>
     </ClInclude>
+    <ClInclude Include="CloudMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Resources\Shaders\terrain.frag.glsl">
@@ -215,6 +221,12 @@
       <Filter>Header Files\Shaders</Filter>
     </None>
     <None Include="..\Resources\Shaders\sky.frag.glsl">
+      <Filter>Header Files\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Shaders\cloud.frag.glsl">
+      <Filter>Header Files\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Shaders\cloud.vert.glsl">
       <Filter>Header Files\Shaders</Filter>
     </None>
   </ItemGroup>

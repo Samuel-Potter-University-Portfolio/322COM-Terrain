@@ -44,6 +44,16 @@ public:
 	bool LoadFromFile(const string& file);
 
 	/**
+	* Attempt to load a texture from memory
+	* @param data		The data to load
+	* @param width		The width of the data
+	* @param height		The height of the data
+	* @param format		The (OpenGL) format of the data
+	* @returns If succesful or not
+	*/
+	bool LoadFromMemory(const void* data, const uint32& width, const uint32& height, const uint32& format);
+
+	/**
 	* Attempt to load a cubemap from files
 	* @param <side>file		The path to the file to load from
 	* @returns If succesful or not

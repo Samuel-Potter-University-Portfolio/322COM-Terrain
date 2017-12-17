@@ -27,7 +27,7 @@ void ChunkJob_Generate::Execute()
 	const float overhangFactor = 15.0f;
 
 	/// Biome info
-	const float oceanEnd = 0.4f;
+	const float oceanEnd = 0.45f;
 	const float woodsStart = 0.55f;
 
 	const float beachHeight = 20;

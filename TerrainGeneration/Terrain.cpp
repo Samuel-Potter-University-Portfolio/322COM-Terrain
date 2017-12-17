@@ -34,7 +34,7 @@ Terrain::Terrain(Scene* scene, const uint32& seed) :
 
 	// Setup chunk pool
 	for (uint32 i = 0; i < m_poolSize; ++i)
-		m_chunkPool.emplace(new Chunk(this));
+		m_chunkPool.push(new Chunk(this));
 	LOG("Built chunk pool of size %i", m_poolSize);
 	
 

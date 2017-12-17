@@ -94,6 +94,31 @@ bool Texture::LoadFromFile(const string& file)
 	return true;
 }
 
+bool Texture::LoadFromMemory(const void* data, const uint32& width, const uint32& height, const uint32& format)
+{
+	bIsLoaded = false;
+	m_width = width;
+	m_height = height;
+
+	glBindTexture(GL_TEXTURE_2D, m_id);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_DECAL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_DECAL);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, bUsesMipmaps ? GL_NEAREST_MIPMAP_LINEAR : GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, bIsSmooth ? GL_LINEAR : GL_NEAREST);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, bIsRepeated ? GL_REPEAT : GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, bIsRepeated ? GL_REPEAT : GL_CLAMP_TO_EDGE);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, format, GL_UNSIGNED_BYTE, data);
+	if (bUsesMipmaps)
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+	bIsLoaded = true;
+	glBindTexture(GL_TEXTURE_2D, 0);
+	return true;
+}
+
 bool Texture::LoadCubemapFromFiles(const string& frontFile, const string& backFile, const string& leftFile, const string& rightFile, const string& topFile, const string& bottomFile)
 {
 	const uint32 glSide[]
