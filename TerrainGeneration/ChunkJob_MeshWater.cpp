@@ -41,6 +41,8 @@ void ChunkJob_MeshWater::Execute()
 
 			for (int32 y = CHUNK_HEIGHT - 1; y >= 0; --y)
 			{
+				ASSERT_JOB_VALID;
+
 				Voxel::Type type = chunk.Get(x, y, z);
 
 				// Put quad facing upwards

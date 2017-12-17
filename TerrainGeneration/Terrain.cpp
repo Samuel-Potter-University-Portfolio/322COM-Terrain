@@ -23,7 +23,6 @@ Terrain::Terrain(Scene* scene, const uint32& seed) :
 
 	// Base pool size on unload range
 	m_poolSize = (m_unloadRadius * 2 + 1)*(m_unloadRadius * 2 + 1) + 40;
-	m_previousCentre = ivec2(-1000, -1000); // Force sync
 
 	LOG("Using seed: %i", seed);
 	LOG("Chunk Settings:");
@@ -39,7 +38,7 @@ Terrain::Terrain(Scene* scene, const uint32& seed) :
 	LOG("Built chunk pool of size %i", m_poolSize);
 	
 
-	// Load initialize small radius of chunks
+	// Load initialize small radius of chunkss
 	for (int32 x = -2; x <= 2; ++x)
 		for (int32 y = -2; y <= 2; ++y)
 		{
@@ -170,7 +169,12 @@ void Terrain::RunWorker()
 				y += dy;
 			}
 
-			bWaitingOnFirstBuild = false;
+
+			if (bWaitingOnFirstBuild)
+			{
+				m_previousCentre = vec2(-11341, 134785); // Force resync
+				bWaitingOnFirstBuild = false;
+			}
 		}
 		catch (std::exception e)
 		{
@@ -274,6 +278,7 @@ void Terrain::UpdateScene(Window& window, const float& deltaTime)
 	for (uint32 i = 0; i < 10 && m_completedJobQueue.size() != 0; ++i)
 	{
 		IChunkJob* job = m_completedJobQueue.front();
+		m_completedJobQueue.pop();
 
 		// Only complete if not aborted
 		if (!job->IsAborted())
@@ -283,7 +288,6 @@ void Terrain::UpdateScene(Window& window, const float& deltaTime)
 				job->GetOwningChunk().OnJobCompletion(job);
 		}
 
-		m_completedJobQueue.pop();
 		delete job;
 	}
 }

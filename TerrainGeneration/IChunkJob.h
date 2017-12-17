@@ -1,6 +1,9 @@
 #pragma once
 
 
+#define ASSERT_JOB_VALID if (IsAborted())return;
+
+
 /**
 * Interface for execute a task relating to a specific chunk
 * (These jobs will be executed in a sperate thread)

@@ -37,6 +37,8 @@ void ChunkJob_Generate::Execute()
 	for (uint32 x = 0; x < CHUNK_SIZE; ++x)
 		for (uint32 z = 0; z < CHUNK_SIZE; ++z)
 		{
+			ASSERT_JOB_VALID;
+
 			const vec3 worldPos2D = offset + vec3(x, 0, z);
 			const float biomeValue = noise->GetOctave(worldPos2D.x*biomeScale, worldPos2D.z*biomeScale, 2, 0.8f);
 
@@ -125,6 +127,8 @@ void ChunkJob_Generate::Execute()
 		{
 			for (int32 y = CHUNK_HEIGHT - 1; y >= 0; --y)
 			{
+				ASSERT_JOB_VALID;
+
 				Voxel::Type type = chunk.Get(x, y, z);
 
 				if (type != Voxel::Type::Air)
@@ -148,6 +152,8 @@ void ChunkJob_Generate::Execute()
 		{
 			for (int32 y = CHUNK_HEIGHT - 1; y >= 0; --y)
 			{
+				ASSERT_JOB_VALID;
+
 				Voxel::Type type = chunk.Get(x, y, z);
 
 				if (type != Voxel::Type::Air)

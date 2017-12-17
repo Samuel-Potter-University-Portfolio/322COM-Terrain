@@ -65,7 +65,7 @@ public:
 				// Rotate branches and vary slightly
 				const float branchDeltaAngle = 3.141592f * 2.0f / 3.0f;
 				const vec2 subAngle(
-					glm::clamp(angle.x + glm::radians(-30.0f + 35.0f * v2), glm::radians(-88.0f), glm::radians(88.0f)),
+					glm::clamp(angle.x + glm::radians(-60.0f + 120.0f * v2), glm::radians(-88.0f), glm::radians(88.0f)),
 					angle.y + branchDeltaAngle * i + glm::radians(-100.0f + 50.0f * v1)
 				);
 
@@ -316,6 +316,8 @@ void ChunkJob_MeshTrees::Execute()
 		for (uint32 z = 0; z < CHUNK_SIZE; ++z)
 			for (uint32 y = CHUNK_HEIGHT - 1; y > 0; --y)
 			{
+				ASSERT_JOB_VALID;
+
 				Voxel::Type type = chunk.Get(x, y, z);
 				if (type == Voxel::Type::Air)
 					continue;

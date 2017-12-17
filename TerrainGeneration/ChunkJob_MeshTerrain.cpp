@@ -138,9 +138,7 @@ void ChunkJob_MeshTerrain::Execute()
 		for (int32 y = 0; y < CHUNK_HEIGHT; ++y)
 			for (int32 z = -1; z <= CHUNK_SIZE; ++z)
 			{
-				// Aborted, so stop execution here
-				if (IsAborted())
-					return;
+				ASSERT_JOB_VALID;
 
 				// Encode case based on bit presence
 				uint8 caseIndex = 0;
@@ -284,9 +282,7 @@ void ChunkJob_MeshTerrain::Execute()
 	// Repeat process for extra triangles
 	for (uint32 i = 0; i < extraTriangles.size(); i += 3)
 	{
-		// Aborted, so stop execution here
-		if (IsAborted())
-			return;
+		ASSERT_JOB_VALID;
 
 		uint32 ai = extraTriangles[i];
 		uint32 bi = extraTriangles[i + 1];
