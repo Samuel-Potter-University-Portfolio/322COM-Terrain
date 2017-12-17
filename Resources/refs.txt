@@ -1,4 +1,7 @@
-Grass+Sand self built for 302CDE
+Grass self built for 302CDE
+
+Sand:
+http://opengameart.org/content/generic-tileable-sand-texture
 
 Dirt + Stone:
 http://opengameart.org/content/50-free-textures-4-normalmaps?page=2

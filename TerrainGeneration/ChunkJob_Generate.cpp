@@ -24,6 +24,7 @@ void ChunkJob_Generate::Execute()
 
 	const float scale = 0.02f;
 	const float overhangScale = 0.01f;
+	const float overhangFactor = 15.0f;
 
 	/// Biome info
 	const float oceanEnd = 0.4f;
@@ -84,7 +85,7 @@ void ChunkJob_Generate::Execute()
 						if (y < beachHeight)
 							overhangThreshold = 1.0f;
 						else
-							overhangThreshold = 1.0f - glm::min((float)(y - beachHeight) / 20.0f, 1.0f) * 0.5f;
+							overhangThreshold = 1.0f - glm::min((float)(y - beachHeight) / overhangFactor, 1.0f) * 0.5f;
 
 						if (overhangValue <= overhangThreshold)
 							chunk.Set(x, y, z, Voxel::Type::Stone);
@@ -108,7 +109,7 @@ void ChunkJob_Generate::Execute()
 					if (y < beachHeight)
 						overhangThreshold = 1.0f;
 					else
-						overhangThreshold = 1.0f - glm::min((float)(y - beachHeight) / 20.0f, 1.0f) * 0.5f;
+						overhangThreshold = 1.0f - glm::min((float)(y - beachHeight) / overhangFactor, 1.0f) * 0.5f;
 
 					if(overhangValue <= overhangThreshold)
 						chunk.Set(x, y, z, Voxel::Type::Stone);
