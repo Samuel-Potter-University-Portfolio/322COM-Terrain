@@ -19,7 +19,7 @@ void main()
 	float diffuse = max(dot(-lightDirection, normal), 0.2);
 
 	vec3 toCamera = normalize(passToCamera);
-	vec3 reflectedLight = reflect(lightDirection, normal);
+	vec3 reflectedLight = reflect(-lightDirection, normal);
 
 	float specular = max(0.0, dot(reflectedLight, toCamera));
 

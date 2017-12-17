@@ -7,14 +7,18 @@
 #include "Terrain.h"
 #include "ChunkJob_Generate.h"
 #include "ChunkJob_MeshTerrain.h"
+#include "ChunkJob_MeshTrees.h";
 
 
 Chunk::Chunk(Terrain* terrain) :
 	m_terrain(*terrain)
 {
 	m_terrainMesh = new Mesh;
-	m_treeMesh = new Mesh;
+	m_treeMesh = new LeveledMesh;
 	m_waterMesh = new Mesh;
+
+	m_treeMesh->AddLoDs(TREE_LOD_COUNT);
+	m_treeMesh->SetLoDRange(150.0f);
 }
 Chunk::~Chunk()
 {

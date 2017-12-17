@@ -170,6 +170,7 @@
     <ClInclude Include="DefaultMaterial.h" />
     <ClInclude Include="IChunkJob.h" />
     <ClInclude Include="Keyboard.h" />
+    <ClInclude Include="LeveledMesh.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="MarchingCubes.h" />
     <ClInclude Include="Material.h" />

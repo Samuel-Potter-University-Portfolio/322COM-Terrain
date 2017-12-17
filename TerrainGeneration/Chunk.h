@@ -3,6 +3,7 @@
 
 #include "IChunkJob.h"
 #include "Mesh.h"
+#include "LeveledMesh.h"
 
 #include <queue>
 #include <list>
@@ -57,7 +58,7 @@ private:
 	/// Rendering/Generating vars
 	///
 	Mesh* m_terrainMesh = nullptr;
-	Mesh* m_treeMesh = nullptr;
+	LeveledMesh* m_treeMesh = nullptr;
 	Mesh* m_waterMesh = nullptr;
 
 	friend class ChunkJob_Generate;
@@ -149,7 +150,7 @@ public:
 
 	inline ivec2 GetCoords() const { return m_chunkCoords; }
 	inline Mesh* GetTerrainMesh() const { return m_terrainMesh; }
-	inline Mesh* GetTreeMesh() const { return m_treeMesh; }
+	inline LeveledMesh* GetTreeMesh() const { return m_treeMesh; }
 	inline Mesh* GetWaterMesh() const { return m_waterMesh; }
 
 	inline bool HasVoxelsGenerated() const { return bAreVoxelsGenerated; }

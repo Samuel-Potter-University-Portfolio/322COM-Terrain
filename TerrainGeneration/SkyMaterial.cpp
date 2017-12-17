@@ -12,6 +12,7 @@ SkyMaterial::SkyMaterial()
 	m_shader->LinkShader();
 
 
+	m_skyTexture.SetSmooth(true);
 	m_skyTexture.LoadCubemapFromFiles(
 		"Resources\\Sky\\Back.png",
 		"Resources\\Sky\\Front.png",

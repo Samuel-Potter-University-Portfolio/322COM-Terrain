@@ -5,6 +5,9 @@
 #include <vector>
 
 
+#define TREE_LOD_COUNT 4
+
+
 
 /**
 * Job for building the mesh for the main terrain
@@ -17,11 +20,11 @@ private:
 	///
 	/// Temp mesh vars
 	///
-	std::vector<uint32> m_triangles;
-	std::vector<vec3> m_vertices;
-	std::vector<vec3> m_normals;
-	std::vector<vec2> m_uvs;
-	std::vector<vec2> m_extraData0; // Encoded in uv channel 1 contains: texture type and sway weights
+	std::vector<uint32> m_triangles[TREE_LOD_COUNT];
+	std::vector<vec3> m_vertices[TREE_LOD_COUNT];
+	std::vector<vec3> m_normals[TREE_LOD_COUNT];
+	std::vector<vec2> m_uvs[TREE_LOD_COUNT];
+	std::vector<vec2> m_extraData0[TREE_LOD_COUNT]; // Encoded in uv channel 1 contains: texture type and sway weights
 
 
 public:

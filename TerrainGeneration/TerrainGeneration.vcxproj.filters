@@ -188,6 +188,9 @@
     <ClInclude Include="SkyMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LeveledMesh.h">
+      <Filter>Header Files\GL</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Resources\Shaders\terrain.frag.glsl">

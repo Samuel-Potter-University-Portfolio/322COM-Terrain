@@ -310,13 +310,16 @@ void Terrain::RenderTerrain(Window& window, const float& deltaTime)
 void Terrain::RenderTrees(Window& window, const float& deltaTime) 
 {
 	m_treeMaterial.Bind(window, *m_parent);
-
+	const vec3 cameraLocation = m_parent->GetCamera().GetLocation();
 
 	for (auto it : m_activeChunks)
 	{
 		if (it.second->IsTreeMeshBuilt())
 		{
-			m_terrainMaterial.PrepareMesh(*it.second->GetTreeMesh());
+			const vec3 chunkOffset = vec3(CHUNK_SIZE * it.second->GetCoords().x, 0, CHUNK_SIZE * it.second->GetCoords().y);
+			const vec3 diff = chunkOffset - cameraLocation;
+
+			m_terrainMaterial.PrepareMesh(*it.second->GetTreeMesh()->GetMesh(glm::dot(diff, diff)));
 			m_terrainMaterial.RenderInstance(Transform());
 		}
 	}

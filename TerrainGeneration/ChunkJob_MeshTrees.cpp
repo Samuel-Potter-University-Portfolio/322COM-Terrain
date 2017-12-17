@@ -85,29 +85,30 @@ public:
 
 	/**
 	* Generate the mesh for this tree, by treating this branch as the trunk
+	* @param lod						The current level of detail which the mesh is being built for
 	* @param target						Where to store the mesh data
 	*/
-	void GenerateTreeMeshData(ChunkJob_MeshTrees& target)
+	void GenerateTreeMeshData(const uint32& lod, ChunkJob_MeshTrees& target)
 	{
-		const uint32 startIndex = target.m_vertices.size();
+		const uint32 startIndex = target.m_vertices[lod].size();
 
 		// Generate base of tree
 		{
-			const int32 segments = 8;
+			const int32 segments = std::max(8 - lod * 2, 3U);
 			const float deltaAngle = 3.141592f * 2.0f / segments;
 
 
 			// Build ring
 			for (int32 i = 0; i <= segments; ++i)
 			{
-				const uint32 index = target.m_vertices.size();
+				const uint32 index = target.m_vertices[lod].size();
 				const vec3 P = vec3(cosf(deltaAngle * (i + 0)), 0, sinf(deltaAngle * (i + 0))) * m_width * 0.5f;
 
-				target.m_vertices.emplace_back(m_location + P);
-				target.m_normals.emplace_back(P);
-				target.m_uvs.emplace_back(vec2((float)i / (float)segments * m_width, 0.0f));
+				target.m_vertices[lod].emplace_back(m_location + P);
+				target.m_normals[lod].emplace_back(P);
+				target.m_uvs[lod].emplace_back(vec2((float)i / (float)segments * m_width, 0.0f));
 
-				target.m_extraData0.emplace_back(vec2(
+				target.m_extraData0[lod].emplace_back(vec2(
 					0,		// Texture type
 					0		// Sway weight
 				));
@@ -117,59 +118,67 @@ public:
 		}
 
 		// Generate recurisively using branches
-		GenerateBranchMeshData(startIndex, 0.0f, target);
+		GenerateBranchMeshData(lod, 0, startIndex, 0.0f, target);
 	}
 
 public:
 
 	/**
 	* Generate the mesh for this tree, by treating this branch as just another branch
+	* @param lod						The current level of detail which the mesh is being built for
+	* @param depth						How deep into the tree are we
 	* @param previousCircle				The index that the previous ring of vertices started at
 	* @param totalLength				The total length of the tree up to this point
 	* @param target						Where to store the mesh data
 	*/
-	void GenerateBranchMeshData(const uint32& previousCircle, const float& totalLength, ChunkJob_MeshTrees& target)
+	void GenerateBranchMeshData(const uint32& lod, const uint32& depth, const uint32& previousCircle, const float& totalLength, ChunkJob_MeshTrees& target)
 	{
 		const vec3 direction = glm::rotateY(glm::rotateX(vec3(0, 1, 0), m_angle.x), m_angle.y);
 		const vec3 circleOffset = m_location + direction * m_length;
-		const uint32 startIndex = target.m_vertices.size();
+		uint32 startIndex = target.m_vertices[lod].size();
 
 
-		// Build ring
-		const int32 segments = 8;
-		const float deltaAngle = 3.141592f * 2.0f / segments;
-
-		for (int32 i = 0; i <= segments; ++i)
+		// Only build specific branches at certain LoD
+		if (lod == 0 || (depth % (lod + 1) == 0 || m_width == 0.0f))
 		{
-			const uint32 index = target.m_vertices.size();
-			const vec3 P = vec3(cosf(deltaAngle * (i + 0)), 0, sinf(deltaAngle * (i + 0))) * m_width * 0.5f;
-			const vec3 rP = glm::rotateX(P, -m_angle.x);
+			// Build ring
+			const int32 segments = std::max(8 - lod * 2, 3U);
+			const float deltaAngle = 3.141592f * 2.0f / segments;
 
-			target.m_vertices.emplace_back(circleOffset + P);
-			target.m_normals.emplace_back(P);
-			target.m_uvs.emplace_back(vec2((float)i / (float)segments * m_width, totalLength + m_length));
-			target.m_extraData0.emplace_back(vec2(
-				0,										// Texture type
-				glm::max(1.0f - m_width * 0.5f, 0.0f)	// Sway weight
-				));
+			for (int32 i = 0; i <= segments; ++i)
+			{
+				const uint32 index = target.m_vertices[lod].size();
+				const vec3 P = vec3(cosf(deltaAngle * (i + 0)), 0, sinf(deltaAngle * (i + 0))) * m_width * 0.5f;
+				const vec3 rP = glm::rotateX(P, -m_angle.x);
+
+				target.m_vertices[lod].emplace_back(circleOffset + P);
+				target.m_normals[lod].emplace_back(P);
+				target.m_uvs[lod].emplace_back(vec2((float)i / (float)segments * m_width, totalLength + m_length));
+				target.m_extraData0[lod].emplace_back(vec2(
+					0,										// Texture type
+					glm::max(1.0f - m_width * 0.5f, 0.0f)	// Sway weight
+					));
+			}
+
+			// Create tris
+			for (int32 i = 0; i < segments; ++i)
+			{
+				target.m_triangles[lod].emplace_back(previousCircle + i + 0);
+				target.m_triangles[lod].emplace_back(startIndex + i + 0);
+				target.m_triangles[lod].emplace_back(startIndex + i + 1);
+
+				target.m_triangles[lod].emplace_back(previousCircle + i + 0);
+				target.m_triangles[lod].emplace_back(startIndex + i + 1);
+				target.m_triangles[lod].emplace_back(previousCircle + i + 1);
+			}
 		}
-
-		// Create tris
-		for (int32 i = 0; i < segments; ++i)
-		{
-			target.m_triangles.emplace_back(previousCircle + i + 0);
-			target.m_triangles.emplace_back(startIndex + i + 0);
-			target.m_triangles.emplace_back(startIndex + i + 1);
-
-			target.m_triangles.emplace_back(previousCircle + i + 0);
-			target.m_triangles.emplace_back(startIndex + i + 1);
-			target.m_triangles.emplace_back(previousCircle + i + 1);
-		}
+		else
+			startIndex = previousCircle;
 
 
 		// Add leaves, if at end
 		if (m_width == 0)
-			GenerateLeaves(totalLength, target);
+			GenerateLeaves(lod, totalLength, target);
 
 		// Add branches, if not at end
 		else
@@ -177,11 +186,17 @@ public:
 			// Create sub branches
 			for (TreeBranch* branch : m_subBranches)
 				if (branch != nullptr)
-					branch->GenerateBranchMeshData(startIndex, totalLength + m_length, target);
+					branch->GenerateBranchMeshData(lod, depth + 1, startIndex, totalLength + m_length, target);
 		}
 	}
 
-	void GenerateLeaves(const float& totalLength, ChunkJob_MeshTrees& target)
+	/**
+	* Generate the leaves for the end of a branch
+	* @param lod						The current level of detail which the mesh is being built for
+	* @param totalLength				The total length of the tree up to this point
+	* @param target						Where to store the mesh data
+	*/
+	void GenerateLeaves(const uint32& lod, const float& totalLength, ChunkJob_MeshTrees& target)
 	{
 		const vec3 direction = glm::rotateY(glm::rotateX(vec3(0, 1, 0), m_angle.x), m_angle.y);
 		const vec3 offset = m_location + direction * m_length;
@@ -192,110 +207,109 @@ public:
 			);
 
 
-		// Create pyramid
-		const uint32 index = target.m_vertices.size();
+		const uint32 index = target.m_vertices[lod].size();
 		const float leafSize = totalLength * 0.3f;
 		const float leafSag = 0.4f + totalLength * 0.2f;
 
-		target.m_vertices.emplace_back(offset + vec3(-1, 0, -1) * leafSize + vec3(0, -leafSag, 0));
-		target.m_vertices.emplace_back(offset + vec3(1, 0, -1) * leafSize + vec3(0, -leafSag, 0));
-		target.m_vertices.emplace_back(offset + vec3(-1, 0, 1) * leafSize + vec3(0, -leafSag, 0));
-		target.m_vertices.emplace_back(offset + vec3(1, 0, 1) * leafSize + vec3(0, -leafSag, 0));
-		target.m_vertices.emplace_back(offset + vec3(0, 0, 0) * leafSize);
+		// Create pyramid
+		if (lod != TREE_LOD_COUNT - 1)
+		{
+			target.m_vertices[lod].emplace_back(offset + vec3(-1, 0, -1) * leafSize + vec3(0, -leafSag, 0));
+			target.m_vertices[lod].emplace_back(offset + vec3(1, 0, -1) * leafSize + vec3(0, -leafSag, 0));
+			target.m_vertices[lod].emplace_back(offset + vec3(-1, 0, 1) * leafSize + vec3(0, -leafSag, 0));
+			target.m_vertices[lod].emplace_back(offset + vec3(1, 0, 1) * leafSize + vec3(0, -leafSag, 0));
+			target.m_vertices[lod].emplace_back(offset + vec3(0, 0, 0) * leafSize);
 
-		target.m_normals.emplace_back(glm::normalize(vec3(-1, 0.5f, -1)));
-		target.m_normals.emplace_back(glm::normalize(vec3(1, 0.5f, -1)));
-		target.m_normals.emplace_back(glm::normalize(vec3(-1, 0.5f, -1)));
-		target.m_normals.emplace_back(glm::normalize(vec3(1, 0.5f, 1)));
-		target.m_normals.emplace_back(vec3(0, 1, 0));
+			target.m_normals[lod].emplace_back(glm::normalize(vec3(-1, 0.5f, -1)));
+			target.m_normals[lod].emplace_back(glm::normalize(vec3(1, 0.5f, -1)));
+			target.m_normals[lod].emplace_back(glm::normalize(vec3(-1, 0.5f, -1)));
+			target.m_normals[lod].emplace_back(glm::normalize(vec3(1, 0.5f, 1)));
+			target.m_normals[lod].emplace_back(vec3(0, 1, 0));
 
-		target.m_uvs.emplace_back(vec2(0, 0));
-		target.m_uvs.emplace_back(vec2(1, 0));
-		target.m_uvs.emplace_back(vec2(0, 1));
-		target.m_uvs.emplace_back(vec2(1, 1));
-		target.m_uvs.emplace_back(vec2(0.5f, 0.5f));
+			target.m_uvs[lod].emplace_back(vec2(0, 0));
+			target.m_uvs[lod].emplace_back(vec2(1, 0));
+			target.m_uvs[lod].emplace_back(vec2(0, 1));
+			target.m_uvs[lod].emplace_back(vec2(1, 1));
+			target.m_uvs[lod].emplace_back(vec2(0.5f, 0.5f));
 
-		target.m_extraData0.emplace_back(extraData0);
-		target.m_extraData0.emplace_back(extraData0);
-		target.m_extraData0.emplace_back(extraData0);
-		target.m_extraData0.emplace_back(extraData0);
-		target.m_extraData0.emplace_back(extraData0);
-
-
-		// Make faces 2 sided
-		target.m_triangles.emplace_back(index + 0);
-		target.m_triangles.emplace_back(index + 4);
-		target.m_triangles.emplace_back(index + 1);
-		target.m_triangles.emplace_back(index + 0);
-		target.m_triangles.emplace_back(index + 1);
-		target.m_triangles.emplace_back(index + 4);
-
-		target.m_triangles.emplace_back(index + 1);
-		target.m_triangles.emplace_back(index + 4);
-		target.m_triangles.emplace_back(index + 3);
-		target.m_triangles.emplace_back(index + 1);
-		target.m_triangles.emplace_back(index + 3);
-		target.m_triangles.emplace_back(index + 4);
-
-		target.m_triangles.emplace_back(index + 4);
-		target.m_triangles.emplace_back(index + 3);
-		target.m_triangles.emplace_back(index + 2);
-		target.m_triangles.emplace_back(index + 4);
-		target.m_triangles.emplace_back(index + 2);
-		target.m_triangles.emplace_back(index + 3);
-
-		target.m_triangles.emplace_back(index + 4);
-		target.m_triangles.emplace_back(index + 0);
-		target.m_triangles.emplace_back(index + 2);
-		target.m_triangles.emplace_back(index + 4);
-		target.m_triangles.emplace_back(index + 2);
-		target.m_triangles.emplace_back(index + 0);
+			target.m_extraData0[lod].emplace_back(extraData0);
+			target.m_extraData0[lod].emplace_back(extraData0);
+			target.m_extraData0[lod].emplace_back(extraData0);
+			target.m_extraData0[lod].emplace_back(extraData0);
+			target.m_extraData0[lod].emplace_back(extraData0);
 
 
-		
+			// Make faces 2 sided
+			target.m_triangles[lod].emplace_back(index + 0);
+			target.m_triangles[lod].emplace_back(index + 4);
+			target.m_triangles[lod].emplace_back(index + 1);
+			target.m_triangles[lod].emplace_back(index + 0);
+			target.m_triangles[lod].emplace_back(index + 1);
+			target.m_triangles[lod].emplace_back(index + 4);
+
+			target.m_triangles[lod].emplace_back(index + 1);
+			target.m_triangles[lod].emplace_back(index + 4);
+			target.m_triangles[lod].emplace_back(index + 3);
+			target.m_triangles[lod].emplace_back(index + 1);
+			target.m_triangles[lod].emplace_back(index + 3);
+			target.m_triangles[lod].emplace_back(index + 4);
+
+			target.m_triangles[lod].emplace_back(index + 4);
+			target.m_triangles[lod].emplace_back(index + 3);
+			target.m_triangles[lod].emplace_back(index + 2);
+			target.m_triangles[lod].emplace_back(index + 4);
+			target.m_triangles[lod].emplace_back(index + 2);
+			target.m_triangles[lod].emplace_back(index + 3);
+
+			target.m_triangles[lod].emplace_back(index + 4);
+			target.m_triangles[lod].emplace_back(index + 0);
+			target.m_triangles[lod].emplace_back(index + 2);
+			target.m_triangles[lod].emplace_back(index + 4);
+			target.m_triangles[lod].emplace_back(index + 2);
+			target.m_triangles[lod].emplace_back(index + 0);
+		}
+
 		// Flat quad
-		/*
-		const uint32 index = target.m_vertices.size();
-		const float leafSize = 1.0f;
+		else
+		{
+			target.m_vertices[lod].emplace_back(offset + vec3(-1, 0, -1) * leafSize);
+			target.m_vertices[lod].emplace_back(offset + vec3(1, 0, -1) * leafSize);
+			target.m_vertices[lod].emplace_back(offset + vec3(-1, 0, 1) * leafSize);
+			target.m_vertices[lod].emplace_back(offset + vec3(1, 0, 1) * leafSize);
 
-		target.m_vertices.emplace_back(offset + vec3(-1, 0, -1) * leafSize);
-		target.m_vertices.emplace_back(offset + vec3(1, 0, -1) * leafSize);
-		target.m_vertices.emplace_back(offset + vec3(-1, 0, 1) * leafSize);
-		target.m_vertices.emplace_back(offset + vec3(1, 0, 1) * leafSize);
+			target.m_normals[lod].emplace_back(glm::normalize(vec3(-1, 0.5f, -1)));
+			target.m_normals[lod].emplace_back(glm::normalize(vec3(1, 0.5f, -1)));
+			target.m_normals[lod].emplace_back(glm::normalize(vec3(-1, 0.5f, -1)));
+			target.m_normals[lod].emplace_back(glm::normalize(vec3(1, 0.5f, 1)));
 
-		target.m_normals.emplace_back(vec3(0, 1, 0));
-		target.m_normals.emplace_back(vec3(0, 1, 0));
-		target.m_normals.emplace_back(vec3(0, 1, 0));
-		target.m_normals.emplace_back(vec3(0, 1, 0));
+			target.m_uvs[lod].emplace_back(vec2(0, 0));
+			target.m_uvs[lod].emplace_back(vec2(1, 0));
+			target.m_uvs[lod].emplace_back(vec2(0, 1));
+			target.m_uvs[lod].emplace_back(vec2(1, 1));
 
-		target.m_uvs.emplace_back(vec2(0, 0));
-		target.m_uvs.emplace_back(vec2(1, 0));
-		target.m_uvs.emplace_back(vec2(0, 1));
-		target.m_uvs.emplace_back(vec2(1, 1));
-
-		target.m_extraData0.emplace_back(extraData0);
-		target.m_extraData0.emplace_back(extraData0);
-		target.m_extraData0.emplace_back(extraData0);
-		target.m_extraData0.emplace_back(extraData0);
+			target.m_extraData0[lod].emplace_back(extraData0);
+			target.m_extraData0[lod].emplace_back(extraData0);
+			target.m_extraData0[lod].emplace_back(extraData0);
+			target.m_extraData0[lod].emplace_back(extraData0);
 
 
-		// Make faces 2 sided
-		target.m_triangles.emplace_back(index + 0);
-		target.m_triangles.emplace_back(index + 2);
-		target.m_triangles.emplace_back(index + 3);
+			// Make faces 2 sided
+			target.m_triangles[lod].emplace_back(index + 0);
+			target.m_triangles[lod].emplace_back(index + 2);
+			target.m_triangles[lod].emplace_back(index + 3);
 
-		target.m_triangles.emplace_back(index + 0);
-		target.m_triangles.emplace_back(index + 3);
-		target.m_triangles.emplace_back(index + 1);
+			target.m_triangles[lod].emplace_back(index + 0);
+			target.m_triangles[lod].emplace_back(index + 3);
+			target.m_triangles[lod].emplace_back(index + 1);
 
-		target.m_triangles.emplace_back(index + 0);
-		target.m_triangles.emplace_back(index + 3);
-		target.m_triangles.emplace_back(index + 2);
+			target.m_triangles[lod].emplace_back(index + 0);
+			target.m_triangles[lod].emplace_back(index + 3);
+			target.m_triangles[lod].emplace_back(index + 2);
 
-		target.m_triangles.emplace_back(index + 0);
-		target.m_triangles.emplace_back(index + 1);
-		target.m_triangles.emplace_back(index + 3);
-		*/
+			target.m_triangles[lod].emplace_back(index + 0);
+			target.m_triangles[lod].emplace_back(index + 1);
+			target.m_triangles[lod].emplace_back(index + 3);
+		}
 	}
 
 
@@ -337,12 +351,18 @@ void ChunkJob_MeshTrees::Execute()
 
 void ChunkJob_MeshTrees::OnComplete() 
 {
-	Mesh* mesh = GetOwningChunk().GetTreeMesh();
-	mesh->SetVertices(m_vertices);
-	mesh->SetNormals(m_normals);
-	mesh->SetUVs(m_uvs);
-	mesh->SetUVs(m_extraData0, 1);
-	mesh->SetTriangles(m_triangles);
+	LeveledMesh* lodmesh = GetOwningChunk().GetTreeMesh();
+
+	for (uint32 i = 0; i < TREE_LOD_COUNT; ++i)
+	{
+		Mesh* mesh = lodmesh->GetLoD(i);
+		mesh->SetVertices(m_vertices[i]);
+		mesh->SetNormals(m_normals[i]);
+		mesh->SetUVs(m_uvs[i]);
+		mesh->SetUVs(m_extraData0[i], 1);
+		mesh->SetTriangles(m_triangles[i]);
+	}
+
 	GetOwningChunk().bIsTreeMeshBuilt = true;
 }
 
@@ -359,5 +379,8 @@ void ChunkJob_MeshTrees::AddTree(const vec3& offset)
 		0.95f,	// Length decay factor
 		0.3f	// Width decay rate
 	);
-	tree.GenerateTreeMeshData(*this);
+
+
+	for (uint32 i = 0; i < TREE_LOD_COUNT; ++i)
+		tree.GenerateTreeMeshData(i, *this);
 }
