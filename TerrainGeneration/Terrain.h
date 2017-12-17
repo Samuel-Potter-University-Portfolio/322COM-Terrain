@@ -8,6 +8,7 @@
 #include "DefaultMaterial.h"
 #include "TerrainMaterial.h"
 #include "TreeMaterial.h"
+#include "WaterMaterial.h"
 
 #include <thread>
 
@@ -52,6 +53,7 @@ private:
 	///
 	std::thread* m_workerThread;
 	bool bWorkerRunning = false;
+	bool bWaitingOnFirstBuild = false;
 
 	/// Jobs that have succesfully completed go here, so they may perform any main thread logic
 	std::queue<IChunkJob*> m_completedJobQueue;
@@ -84,7 +86,7 @@ private:
 	PerlinNoise m_noiseGenerator;
 	TerrainMaterial m_terrainMaterial;
 	TreeMaterial m_treeMaterial;
-	DefaultMaterial m_waterMaterial;
+	WaterMaterial m_waterMaterial;
 
 
 public:

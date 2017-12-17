@@ -16,9 +16,9 @@ Terrain::Terrain(Scene* scene, const uint32& seed) :
 	m_loadRadius = 2;
 	m_unloadRadius = 7;
 #else
-	m_workRadius = 8;
-	m_loadRadius = 16;
-	m_unloadRadius = 20;
+	m_workRadius = 16;
+	m_loadRadius = 18;
+	m_unloadRadius = 24;
 #endif
 
 	// Base pool size on unload range
@@ -30,15 +30,32 @@ Terrain::Terrain(Scene* scene, const uint32& seed) :
 	LOG("\t-WORK_RADIUS:\t%i", m_workRadius);
 	LOG("\t-LOAD_RADIUS:\t%i", m_loadRadius);
 	LOG("\t-UNLOAD_RADIUS:\t%i", m_unloadRadius);
-
-
-	m_workerThread = new std::thread(&Terrain::RunWorker, this);
 	m_activeChunks.reserve(m_poolSize);
+
 
 	// Setup chunk pool
 	for (uint32 i = 0; i < m_poolSize; ++i)
 		m_chunkPool.emplace(new Chunk(this));
 	LOG("Built chunk pool of size %i", m_poolSize);
+	
+
+	// Load initialize small radius of chunks
+	for (int32 x = -2; x <= 2; ++x)
+		for (int32 y = -2; y <= 2; ++y)
+		{
+			ivec2 coords(x, y);
+			if (m_activeChunks.find(coords) == m_activeChunks.end())
+			{
+				Chunk* chunk;
+				if (TryGetNewChunk(chunk, coords))
+					m_activeChunks[coords] = chunk;
+				else
+					LOG_WARNING("Cannot load new chunk (%i,%i) as pool is empty", coords.x, coords.y);
+			}
+		}
+
+	bWaitingOnFirstBuild = true;
+	m_workerThread = new std::thread(&Terrain::RunWorker, this);
 }
 
 Terrain::~Terrain()
@@ -76,6 +93,7 @@ void Terrain::RunWorker()
 		try
 		{
 			ivec2 centre = m_loadCentre;
+			
 
 			// Prioritse jobs from centre in a spiral outwards
 			// https://stackoverflow.com/questions/398299/looping-in-a-spiral
@@ -124,7 +142,7 @@ void Terrain::RunWorker()
 					// Look for jobs to execute
 					if (chunk != nullptr)
 					{
-						if (chunk->HasQueuedJob())
+						while (chunk->HasQueuedJob())
 						{
 							IChunkJob* job = chunk->GetQueuedJob();
 
@@ -151,6 +169,8 @@ void Terrain::RunWorker()
 				x += dx;
 				y += dy;
 			}
+
+			bWaitingOnFirstBuild = false;
 		}
 		catch (std::exception e)
 		{
@@ -208,7 +228,7 @@ void Terrain::UpdateScene(Window& window, const float& deltaTime)
 
 
 	// Only update if centre has changed
-	if (centre != m_previousCentre)
+	if (centre != m_previousCentre && !bWaitingOnFirstBuild)
 	{
 		const std::lock_guard<std::mutex> guard(m_chunkAccessMutex);
 
@@ -226,6 +246,7 @@ void Terrain::UpdateScene(Window& window, const float& deltaTime)
 			else
 				++it;
 		}
+
 
 		// Load any chunks which are in load area and aren't already loaded
 		for (int32 x = -m_loadRadius; x <= m_loadRadius; ++x)
@@ -258,7 +279,8 @@ void Terrain::UpdateScene(Window& window, const float& deltaTime)
 		if (!job->IsAborted())
 		{
 			job->OnComplete();
-			job->GetOwningChunk().OnJobCompletion(job);
+			if (!job->IsAborted())
+				job->GetOwningChunk().OnJobCompletion(job);
 		}
 
 		m_completedJobQueue.pop();

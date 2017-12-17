@@ -27,7 +27,7 @@ void ChunkJob_Generate::Execute()
 
 	/// Biome info
 	const float oceanEnd = 0.4f;
-	const float woodsStart = 0.45f;
+	const float woodsStart = 0.55f;
 
 	const float beachHeight = 20;
 	const uint32 waterHeight = 12;
@@ -163,7 +163,6 @@ void ChunkJob_Generate::Execute()
 				}
 			}
 		}
-
 }
 
 void ChunkJob_Generate::OnComplete() 

@@ -102,6 +102,9 @@
     <ClCompile Include="ChunkJob_MeshWater.cpp">
       <Filter>Source Files\Terrain\Jobs</Filter>
     </ClCompile>
+    <ClCompile Include="WaterMaterial.cpp">
+      <Filter>Source Files\Terrain</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Logger.h">
@@ -176,6 +179,9 @@
     <ClInclude Include="ChunkJob_MeshWater.h">
       <Filter>Header Files\Terrain\Jobs</Filter>
     </ClInclude>
+    <ClInclude Include="WaterMaterial.h">
+      <Filter>Header Files\Terrain</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Resources\Shaders\terrain.frag.glsl">
@@ -188,6 +194,12 @@
       <Filter>Header Files\Shaders</Filter>
     </None>
     <None Include="..\Resources\Shaders\tree.vert.glsl">
+      <Filter>Header Files\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Shaders\water.frag.glsl">
+      <Filter>Header Files\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Shaders\water.vert.glsl">
       <Filter>Header Files\Shaders</Filter>
     </None>
   </ItemGroup>

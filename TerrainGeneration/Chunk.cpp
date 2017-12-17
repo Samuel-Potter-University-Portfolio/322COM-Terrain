@@ -92,7 +92,14 @@ IChunkJob* Chunk::GetQueuedJob()
 }
 void Chunk::OnJobCompletion(IChunkJob* job) 
 {
-	m_activeJobs.erase(std::remove(m_activeJobs.begin(), m_activeJobs.end(), job), m_activeJobs.end());
+	for (auto it = m_activeJobs.begin(); it != m_activeJobs.end(); ++it)
+	{
+		if ((*it) == job)
+		{
+			m_activeJobs.erase(it);
+			return;
+		}
+	}
 }
 
 void Chunk::OnAdjacentChunkGenerate() 

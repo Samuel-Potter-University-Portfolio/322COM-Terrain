@@ -8,12 +8,19 @@
 void SceneMaterial::Bind(Window& window, Scene& scene)
 {
 	m_shader->Bind();
+
+	if (m_uniformObjectToWorld == 0)
+		m_uniformObjectToWorld = m_shader->GetUniform("ObjectToWorld");
+
+	if (m_uniformWorldToView == 0)
+		m_uniformWorldToView = m_shader->GetUniform("WorldToView");
+
+	if (m_uniformViewToClip == 0)
+		m_uniformViewToClip = m_shader->GetUniform("ViewToClip");
+
+
 	m_shader->SetUniformMat4(m_uniformWorldToView, scene.GetCamera().GetViewMatrix());
 	m_shader->SetUniformMat4(m_uniformViewToClip, scene.GetCamera().GetPerspectiveMatrix(&window));
-
-	m_uniformObjectToWorld = m_shader->GetUniform("ObjectToWorld");
-	m_uniformWorldToView = m_shader->GetUniform("WorldToView");
-	m_uniformViewToClip = m_shader->GetUniform("ViewToClip");
 }
 
 void SceneMaterial::PrepareMesh(Mesh& mesh)

@@ -78,6 +78,10 @@ bool Window::Open(const WindowInit& settings)
 	glfwSwapInterval(settings.bVerticalSync);
 	m_keyboard.Link(m_glfwWindow);
 	m_mouse.Link(m_glfwWindow);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	return true;
 }
 

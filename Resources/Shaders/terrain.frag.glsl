@@ -66,4 +66,5 @@ void main()
 	// Test texture based on normal/face
 	//outColour.rgb = texture(texChannel1, GetUVs()).rgb;
 	outColour = GetColour() * diffuse;
+	outColour.a = 1.0;
 }
