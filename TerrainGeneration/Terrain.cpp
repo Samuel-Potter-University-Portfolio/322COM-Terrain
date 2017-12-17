@@ -151,7 +151,7 @@ void Terrain::RunWorker()
 
 							// Job may have aborted during execution
 							if (!job->IsAborted())
-								m_completedJobQueue.emplace(job);
+								m_completedJobQueue.push(job);
 							else
 								delete job;
 						}
